@@ -53,7 +53,7 @@ export default function LoginPage({}: Props) {
 		<Box className="flex justify-center items-center h-screen">
 			<Card className="max-w-[345px] mt-10" elevation={3}>
 				<CardContent>
-					<Typography variant="h4">Sign Up</Typography>
+					<Typography variant="h4">Sign In</Typography>
 				</CardContent>
 
 				<CardContent>
