@@ -28,6 +28,9 @@
       "@/components/*": [
         "./src/components/*"
       ],
+      "@/configs/*": [
+        "./src/configs/*"
+      ],
       "@/services/*": [
         "./src/services/*"
       ],

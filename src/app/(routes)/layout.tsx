@@ -2,7 +2,7 @@
 import DrawerHeader from "@/src/components/layouts/DrawerHeader";
 import Header from "@/src/components/layouts/Header";
 import Sidebar from "@/src/components/layouts/Sidebar";
-import { Box, CssBaseline, useTheme } from "@mui/material";
+import { Box, CssBaseline, styled, useTheme } from "@mui/material";
 import { useState } from "react";
 
 export default function RoutesLayout({
@@ -21,21 +21,15 @@ export default function RoutesLayout({
 		setOpen(false);
 	};
 
-	const drawerWidth = 240;
 	return (
 		<section>
 			<Box sx={{ display: "flex" }}>
 				<CssBaseline />
 				{/* Header */}
-				<Header
-					drawerWidth={drawerWidth}
-					open={open}
-					handleDrawerOpen={handleDrawerOpen}
-				/>
+				<Header open={open} handleDrawerOpen={handleDrawerOpen} />
 
 				{/* Sidebar */}
 				<Sidebar
-					drawerWidth={drawerWidth}
 					theme={theme}
 					open={open}
 					handleDrawerClose={handleDrawerClose}
