@@ -89,25 +89,23 @@ import { ACCESS_TOKEN_KEY } from "@/src/utils/constant";
 import httpClient from "@/src/utils/httpClient";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import Cors from "cors";
 
-// Initialize CORS middleware
-const cors = Cors({
-	methods: ["GET", "POST", "HEAD"],
-	origin: "https://niyom-app-web.vercel.app",
-});
-
-// Helper method to wait for a middleware to execute before continuing
-function runMiddleware(req: NextRequest, fn: Function) {
-	return new Promise((resolve, reject) => {
-		fn(req, (result: any) => {
-			if (result instanceof Error) {
-				return reject(result);
-			}
-			return resolve(result);
-		});
-	});
-}
+// Helper function to set CORS headers
+const setCorsHeaders = (res: NextResponse) => {
+	res.headers.set(
+		"Access-Control-Allow-Origin",
+		"https://niyom-app-web.vercel.app"
+	);
+	res.headers.set(
+		"Access-Control-Allow-Methods",
+		"GET, POST, PUT, DELETE, OPTIONS"
+	);
+	res.headers.set(
+		"Access-Control-Allow-Headers",
+		"Content-Type, Authorization"
+	);
+	return res;
+};
 
 // ############# Routes #############
 // GET
@@ -120,13 +118,15 @@ export async function GET(
 	}
 ) {
 	const route = context.params.route;
-	await runMiddleware(req, cors); // Run CORS middleware
+	let res = NextResponse.json({ route });
+	setCorsHeaders(res);
+
 	if (route === "signout") {
 		return signout(req);
 	} else if (route === "session") {
 		return getSession(req);
 	}
-	return NextResponse.json({ route });
+	return res;
 }
 
 // POST
@@ -135,11 +135,15 @@ export const POST = async (
 	context: { params: { route: string } }
 ) => {
 	const route = context.params.route;
-	await runMiddleware(req, cors); // Run CORS middleware
 	const body = await req.json();
+	let res;
 	if (route === "signin") {
-		return signin(body);
+		res = await signin(body);
+	} else {
+		res = NextResponse.json({ message: "Route not found" });
 	}
+	setCorsHeaders(res);
+	return res;
 };
 
 // ########### controllers #############
@@ -189,4 +193,14 @@ const getSession = async (req: NextRequest) => {
 	} catch (error) {
 		return NextResponse.json({ message: "no" });
 	}
+};
+
+export const OPTIONS = async (req: NextRequest) => {
+	const res = new NextResponse();
+	setCorsHeaders(res);
+	res.headers.set(
+		"Access-Control-Allow-Methods",
+		"GET, POST, PUT, DELETE, OPTIONS"
+	);
+	return res;
 };
