@@ -16,26 +16,28 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Icons from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import { User } from "@/src/interfaces/auth.interface";
+import { useGetSignUp } from "@/src/hooks/useAuth";
+import toast, { Toaster } from "react-hot-toast";
 
 type Props = {};
 
-type SignUp = {
-	// firstname: string;
-	// lastname: string;
-	// address: string;
-	// id_passpost: string;
-	email: string;
-	password: string;
+type SignUp = User & {
 	confirm_password: string;
 };
 
 export default function RegisterPage({}: Props) {
 	const router = useRouter();
+
+	const {
+		mutate: mutateSignUp,
+		isPending: isPendingSignUp,
+		data: dataSignUp,
+	} = useGetSignUp();
+
+	console.log("dataSignUp", dataSignUp);
+
 	const initialValue: SignUp = {
-		// firstname: "",
-		// lastname: "",
-		// address: "",
-		// id_passpost: "",
 		email: "",
 		password: "",
 		confirm_password: "",
@@ -60,6 +62,19 @@ export default function RegisterPage({}: Props) {
 
 	const handleOnSubmit = async (values: SignUp) => {
 		console.log(values);
+
+		const onSuccess = () => {
+			// toast.success("SIGN UP ACCESS SUCCESS");
+			router.push("/login");
+		};
+		const onError = () => {
+			toast.error("SIGN UP ACCESS FAIL");
+		};
+
+		mutateSignUp(values, {
+			onSuccess,
+			onError,
+		});
 	};
 
 	return (
@@ -115,6 +130,7 @@ export default function RegisterPage({}: Props) {
 									label="รหัสผ่าน"
 									autoComplete="password"
 									autoFocus
+									type="password"
 								/>
 							)}
 						/>
@@ -138,6 +154,7 @@ export default function RegisterPage({}: Props) {
 									label="ยืนยันรหัสผ่าน"
 									autoComplete="confirm_password"
 									autoFocus
+									type="password"
 								/>
 							)}
 						/>
@@ -194,6 +211,8 @@ export default function RegisterPage({}: Props) {
 					z-index: -1;
 				}
 			`}</style>
+
+			<Toaster position="top-right" reverseOrder={false} />
 		</Box>
 	);
 }
