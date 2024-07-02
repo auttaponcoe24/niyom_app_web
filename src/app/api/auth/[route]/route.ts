@@ -29,18 +29,24 @@ export const POST = async (
 	context: { params: { route: string } }
 ) => {
 	const route = context.params.route;
+	console.log("Route:", route); // Log route
 	const body = await req.json();
+	console.log("Request body:", body); // Log request body
 	if (route === "signin") {
 		return signin(body);
 	}
+	return NextResponse.json({ message: "Route not found" });
 };
 
 // ########### controllers #############
 
 const signin = async (body: User) => {
 	try {
+		console.log("Calling API with body:", body); // Log body
 		const res = await httpClient.post(`/auth/sign-in`, body);
+		console.log("API response:", res.data); // Log response
 		const { accessToken } = res.data;
+
 		cookies().set(ACCESS_TOKEN_KEY, accessToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV !== "development",
@@ -48,9 +54,15 @@ const signin = async (body: User) => {
 			path: "/",
 		});
 		return NextResponse.json(res.data);
-	} catch (error) {
-		console.log(error);
-		return NextResponse.json({ message: "no" });
+	} catch (error: any) {
+		console.error(
+			"Sign-in error:",
+			error.response ? error.response.data : error.message
+		); // Log detailed error
+		return NextResponse.json({
+			message: "Sign-in failed",
+			error: error.response ? error.response.data : error.message,
+		});
 	}
 };
 
