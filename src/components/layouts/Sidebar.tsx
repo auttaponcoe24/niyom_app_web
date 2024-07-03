@@ -79,7 +79,7 @@ type Props = {
 };
 
 const routesList = [
-	{ pathname: "/main", text: "หนักหลัก", icon: <Layers /> },
+	{ pathname: "/main", text: "หน้าหลัก", icon: <Layers /> },
 	{ pathname: "/zone", text: "จัดการเขต", icon: <AddBusiness /> },
 	{ pathname: "/customer", text: "จัดการลูกค้า", icon: <Person /> },
 	{

@@ -31,7 +31,13 @@ type SignIn = {
 export default function LoginPage({}: Props) {
 	const router = useRouter();
 
-	const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
+	const {
+		mutate: mutateSignIn,
+		isPending: isPendingSignIn,
+		data: dataSignIn,
+	} = useGetSignIn();
+
+	// console.log("dataSignIn", dataSignIn);
 
 	const initialValue: SignIn = {
 		email: "@gmail.com",
@@ -53,7 +59,7 @@ export default function LoginPage({}: Props) {
 	});
 
 	const handleOnSubmit = async (values: SignIn) => {
-		console.log(values);
+		// console.log(values);
 
 		const onSuccess = () => {
 			toast.success("LOGIN ACCESS SUCCESS");
