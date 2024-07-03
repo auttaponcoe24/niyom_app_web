@@ -4,16 +4,26 @@ import { useMutation } from "@tanstack/react-query";
 
 // sign-up
 export const useGetSignUp = () => {
+	const delay = (ms: number) =>
+		new Promise((resolve) => setTimeout(resolve, ms));
 	return useMutation({
 		mutationKey: ["use_get_signup"],
-		mutationFn: (value: User) => SIGN_UP(value),
+		mutationFn: async (value: User) => {
+			await delay(2000);
+			SIGN_UP(value);
+		},
 	});
 };
 
 // sign-in
 export const useGetSignIn = () => {
+	const delay = (ms: number) =>
+		new Promise((resolve) => setTimeout(resolve, ms));
 	return useMutation({
 		mutationKey: ["use_get_signin"],
-		mutationFn: (values: User) => SIGN_IN(values),
+		mutationFn: async (values: User) => {
+			await delay(2000);
+			return SIGN_IN(values);
+		},
 	});
 };

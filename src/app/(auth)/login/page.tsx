@@ -56,6 +56,7 @@ export default function LoginPage({}: Props) {
 		console.log(values);
 
 		const onSuccess = () => {
+			toast.success("LOGIN ACCESS SUCCESS");
 			router.push("/");
 		};
 
@@ -71,6 +72,7 @@ export default function LoginPage({}: Props) {
 
 	return (
 		<>
+			<Toaster position="top-right" reverseOrder={false} />
 			{isPendingSignIn ? (
 				<Box
 					sx={{
@@ -192,8 +194,6 @@ export default function LoginPage({}: Props) {
 							z-index: -1;
 						}
 					`}</style>
-
-					<Toaster position="top-right" reverseOrder={false} />
 				</Box>
 			)}
 		</>
