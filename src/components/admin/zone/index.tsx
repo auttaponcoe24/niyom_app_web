@@ -1,6 +1,8 @@
 "use client";
 
 import ModalDetail from "@/src/components/admin/zone/ModalDetail";
+import TableZone from "@/src/components/admin/zone/TableZone";
+import { useGetZone } from "@/src/hooks/useZone";
 import { Box, Button } from "@mui/material";
 import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
@@ -9,10 +11,19 @@ type Props = {};
 
 export default function ZoneComponent({}: Props) {
 	const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+
+	const {
+		data: dataZone,
+		isLoading: isLoadingZone,
+		isFetching: isFetching,
+		refetch: refetchZone,
+	} = useGetZone();
+	console.log("dataZone=>", dataZone);
+
 	return (
 		<Box>
 			{/* Create */}
-			<div className="flex items-center justify-between">
+			<div className="flex items-center justify-between my-4">
 				<div></div>
 				<Button
 					type="button"
@@ -25,7 +36,7 @@ export default function ZoneComponent({}: Props) {
 			</div>
 
 			{/* table */}
-			<div></div>
+			<TableZone dataZone={dataZone} />
 
 			<ModalDetail isOpenModal={isOpenModal} setIsOpenModal={setIsOpenModal} />
 

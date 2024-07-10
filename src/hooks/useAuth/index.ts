@@ -1,6 +1,11 @@
 import { User } from "@/src/interfaces/auth.interface";
-import { SIGN_IN, SIGN_UP } from "@/src/services/auth.api";
-import { useMutation } from "@tanstack/react-query";
+import {
+	GET_SESSION,
+	SIGN_IN,
+	SIGN_OUT,
+	SIGN_UP,
+} from "@/src/services/auth.api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 // sign-up
 export const useGetSignUp = () => {
@@ -17,13 +22,16 @@ export const useGetSignUp = () => {
 
 // sign-in
 export const useGetSignIn = () => {
-	const delay = (ms: number) =>
-		new Promise((resolve) => setTimeout(resolve, ms));
 	return useMutation({
-		mutationKey: ["use_get_signin"],
-		mutationFn: async (values: User) => {
-			await delay(2000);
-			return SIGN_IN(values);
-		},
+		mutationKey: ["get_signin"],
+		mutationFn: async (values: User) => await SIGN_IN(values),
+	});
+};
+
+// GET_SESSION
+export const useGetSession = () => {
+	return useQuery({
+		queryKey: ["get_session"],
+		queryFn: async () => GET_SESSION(),
 	});
 };

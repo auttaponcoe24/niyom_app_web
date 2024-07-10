@@ -1,59 +1,61 @@
-// "use client";
-// import { getSession, userSelector } from "@/src/store/slices/userSlice";
-// import { store } from "@/src/store/store";
-// import { Box, CircularProgress } from "@mui/material";
-// import { usePathname, useRouter } from "next/navigation";
-// import React, { useEffect } from "react";
-// import { useSelector } from "react-redux";
+"use client";
+import { useGetSession } from "@/src/hooks/useAuth";
+import { Box, CircularProgress } from "@mui/material";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 
-// type Props = {
-// 	children: React.ReactNode;
-// };
+type Props = {
+	children: React.ReactNode;
+};
 
-// export default function AuthProvider({ children }: Props) {
-// 	const router = useRouter();
-// 	const path = usePathname();
-// 	const reducer = useSelector(userSelector);
-// 	const { isAuthenticated, isAuthenticating } = reducer;
+export default function AuthProvider({ children }: Props) {
+	const router = useRouter();
+	const path = usePathname();
+	const {
+		data: dataSession,
+		isFetching: isFetchingSession,
+		refetch: refetchSession,
+	} = useGetSession();
 
-// 	useEffect(() => {
-// 		store.dispatch(getSession());
-// 	}, []);
+	useEffect(() => {
+		refetchSession();
+	}, [refetchSession]);
 
-// 	// If fetching session (eg. show spinner)
-// 	if (isAuthenticating === true) {
-// 		// return null;
-// 		return (
-// 			<Box
-// 				sx={{
-// 					display: "flex",
-// 					alignItems: "center",
-// 					justifyContent: "center",
-// 					height: "100vh",
-// 				}}
-// 			>
-// 				<CircularProgress color="primary" size={60} />
-// 			</Box>
-// 		);
-// 	}
+	// If user is not logged in, return login component
+	useEffect(() => {
+		if (!isFetchingSession) {
+			if (path !== "/login" && path !== "/register") {
+				if (!dataSession) {
+					// isAuthenticated === false
+					router.push("/login");
+				} else if (path === "/") {
+					router.push("/main"); // default page after login when call root path
+				}
+			} else {
+				if (dataSession) {
+					// isAuthenticated === true
+					router.push("/main"); // default page after login
+				}
+			}
+		}
+	}, [dataSession, isFetchingSession, path, router]);
 
-// 	// If user is not logged in, return login component
-// 	if (path !== "/login" && path !== "/register") {
-// 		if (!isAuthenticated) {
-// 			// isAuthenticated === false
-// 			router.push("/login");
-// 			return null;
-// 		} else if (path === "/") {
-// 			router.push("/stock"); //default page after login when call root path
-// 			return null;
-// 		}
-// 	} else {
-// 		if (isAuthenticated) {
-// 			// isAuthenticated === ture
-// 			router.push("/stock"); // default page after login
-// 			return null;
-// 		}
-// 	}
+	// If fetching session (e.g., show spinner)
+	if (isFetchingSession) {
+		return (
+			<Box
+				sx={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					height: "100vh",
+				}}
+			>
+				<CircularProgress color="primary" size={60} />
+			</Box>
+		);
+	}
 
-// 	return <div>{children}</div>;
-// }
+	return <div>{children}</div>;
+}

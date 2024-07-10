@@ -9,6 +9,9 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Box, Menu, MenuItem } from "@mui/material";
 import * as Icons from "@mui/icons-material";
+import { SIGN_OUT } from "@/src/services/auth.api";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const drawerWidth = 240;
 
@@ -40,13 +43,32 @@ type Props = {
 };
 
 export default function Header({ open, handleDrawerOpen }: Props) {
+	const router = useRouter();
 	const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
 	const openMenu = Boolean(anchorEl);
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setAnchorEl(event.currentTarget);
 	};
 	const handleClose = () => {
 		setAnchorEl(null);
+	};
+
+	const handleOnSignOut = async () => {
+		try {
+			const res = await SIGN_OUT();
+			// console.log("res signout", res);
+
+			if (res?.message === "ok") {
+				router.push("/login");
+			} else {
+				toast.error("sign out ไม่สำเร็จ");
+			}
+		} catch (error) {
+			console.log(error);
+		} finally {
+			handleClose();
+		}
 	};
 
 	return (
@@ -96,7 +118,7 @@ export default function Header({ open, handleDrawerOpen }: Props) {
 					>
 						<MenuItem onClick={handleClose}>Profile</MenuItem>
 						<MenuItem onClick={handleClose}>My account</MenuItem>
-						<MenuItem onClick={handleClose}>Logout</MenuItem>
+						<MenuItem onClick={handleOnSignOut}>Logout</MenuItem>
 					</Menu>
 				</Box>
 			</Toolbar>

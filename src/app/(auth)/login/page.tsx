@@ -11,7 +11,7 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -31,13 +31,7 @@ type SignIn = {
 export default function LoginPage({}: Props) {
 	const router = useRouter();
 
-	const {
-		mutate: mutateSignIn,
-		isPending: isPendingSignIn,
-		data: dataSignIn,
-	} = useGetSignIn();
-
-	// console.log("dataSignIn", dataSignIn);
+	const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
 
 	const initialValue: SignIn = {
 		email: "@gmail.com",
@@ -61,18 +55,18 @@ export default function LoginPage({}: Props) {
 	const handleOnSubmit = async (values: SignIn) => {
 		// console.log(values);
 
-		const onSuccess = () => {
-			toast.success("LOGIN ACCESS SUCCESS");
-			router.push("/");
-		};
-
-		const onError = () => {
-			toast.error("LOGIN ACCESS FAIL");
-		};
-
 		mutateSignIn(values, {
-			onSuccess,
-			onError,
+			onSuccess: (data) => {
+				// console.log("data=>", data);
+				if (data.message === "ok") {
+					router.push(`/main`);
+				} else {
+					toast.error("LOGIN ACCESS FAIL");
+				}
+			},
+			onError: (error) => {
+				console.log("error=>", error);
+			},
 		});
 	};
 

@@ -10,3 +10,14 @@ export const CREATE_ZONE = async (values: { zone_name: string }) => {
 		console.log(error);
 	}
 };
+
+// /getAll
+export const GET_ZONE = async () => {
+	try {
+		const res = await httpClient.get(`/zone/getAll`);
+
+		return res.data;
+	} catch (error) {
+		console.log(error);
+	}
+};
