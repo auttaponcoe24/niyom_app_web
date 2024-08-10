@@ -1,5 +1,6 @@
 "use client";
-import { useGetSession } from "@/src/hooks/useAuth";
+import { getSession } from "@/src/store/slices/userSlice";
+import { RootState, store, useAppDispatch } from "@/src/store/store";
 import { Box, CircularProgress } from "@mui/material";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -12,37 +13,39 @@ type Props = {
 export default function AuthProvider({ children }: Props) {
 	const router = useRouter();
 	const path = usePathname();
+	const dispatch = useAppDispatch();
+
 	const {
-		data: dataSession,
-		isFetching: isFetchingSession,
-		refetch: refetchSession,
-	} = useGetSession();
+		data: dataUser,
+		isAuthenticated,
+		isAuthenticating,
+	} = useSelector((state: RootState) => state.userSlice);
 
 	useEffect(() => {
-		refetchSession();
-	}, [refetchSession]);
+		if (!isAuthenticated) {
+			dispatch(getSession());
+		}
+	}, [dispatch, isAuthenticated]);
 
-	// If user is not logged in, return login component
+	// Handle redirect based on authentication status and path
 	useEffect(() => {
-		if (!isFetchingSession) {
-			if (path !== "/login" && path !== "/register") {
-				if (!dataSession) {
-					// isAuthenticated === false
-					router.push("/login");
-				} else if (path === "/") {
-					router.push("/main"); // default page after login when call root path
-				}
-			} else {
-				if (dataSession) {
-					// isAuthenticated === true
-					router.push("/main"); // default page after login
-				}
+		if (isAuthenticating) return;
+
+		if (path !== "/login" && path !== "/register") {
+			if (!isAuthenticated) {
+				router.push("/login");
+			} else if (path === "/") {
+				router.push("/main");
+			}
+		} else {
+			if (isAuthenticated) {
+				router.push("/main");
 			}
 		}
-	}, [dataSession, isFetchingSession, path, router]);
+	}, [isAuthenticated, isAuthenticating, path, router]);
 
 	// If fetching session (e.g., show spinner)
-	if (isFetchingSession) {
+	if (isAuthenticating) {
 		return (
 			<Box
 				sx={{

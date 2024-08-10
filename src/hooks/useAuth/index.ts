@@ -1,4 +1,4 @@
-import { User } from "@/src/interfaces/auth.interface";
+import { TSignIn, TSignUp } from "@/src/interfaces/auth.interface";
 import {
 	GET_SESSION,
 	SIGN_IN,
@@ -13,7 +13,7 @@ export const useGetSignUp = () => {
 		new Promise((resolve) => setTimeout(resolve, ms));
 	return useMutation({
 		mutationKey: ["use_get_signup"],
-		mutationFn: async (value: User) => {
+		mutationFn: async (value: TSignUp) => {
 			await delay(2000);
 			SIGN_UP(value);
 		},
@@ -24,7 +24,7 @@ export const useGetSignUp = () => {
 export const useGetSignIn = () => {
 	return useMutation({
 		mutationKey: ["get_signin"],
-		mutationFn: async (values: User) => await SIGN_IN(values),
+		mutationFn: async (values: TSignIn) => await SIGN_IN(values),
 	});
 };
 

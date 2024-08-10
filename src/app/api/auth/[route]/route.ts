@@ -1,4 +1,4 @@
-import { User } from "@/src/interfaces/auth.interface";
+import { TSignIn } from "@/src/interfaces/auth.interface";
 import { ACCESS_TOKEN_KEY } from "@/src/utils/constant";
 import httpClient from "@/src/utils/httpClient";
 import { cookies } from "next/headers";
@@ -37,11 +37,11 @@ export const POST = async (
 
 // ########### controllers #############
 
-const signin = async (body: User) => {
+const signin = async (body: TSignIn) => {
 	try {
-		const res = await httpClient.post(`/auth/sign-in`, body);
-		const { accessToken } = res.data;
-		cookies().set(ACCESS_TOKEN_KEY, accessToken, {
+		const res = await httpClient.post(`/auth/login`, body);
+		const { token } = res.data;
+		cookies().set(ACCESS_TOKEN_KEY, token, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV !== "development",
 			sameSite: "strict",

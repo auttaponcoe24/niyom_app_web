@@ -17,23 +17,29 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Icons from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { User } from "@/src/interfaces/auth.interface";
+import { TSignIn } from "@/src/interfaces/auth.interface";
 import { useGetSignIn } from "@/src/hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
+import { RootState, useAppDispatch } from "@/src/store/store";
+import { useSelector } from "react-redux";
+import { signIn } from "@/src/store/slices/userSlice";
 
 type Props = {};
 
-type SignIn = {
-	email: string;
-	password: string;
-};
-
 export default function LoginPage({}: Props) {
 	const router = useRouter();
+	const dispatch = useAppDispatch();
+	const {
+		data: dataUser,
+		isLoading: isLoadingUser,
+		isAuthenticated,
+	} = useSelector((state: RootState) => state.userSlice);
 
-	const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
+	console.log("dataUser=>", dataUser);
 
-	const initialValue: SignIn = {
+	// const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
+
+	const initialValue: TSignIn = {
 		email: "@gmail.com",
 		password: "",
 	};
@@ -47,33 +53,43 @@ export default function LoginPage({}: Props) {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<User>({
+	} = useForm<TSignIn>({
 		defaultValues: initialValue,
 		resolver: yupResolver(formValidateSchema),
 	});
 
-	const handleOnSubmit = async (values: SignIn) => {
+	const handleOnSubmit = async (values: TSignIn) => {
 		// console.log(values);
-
-		mutateSignIn(values, {
-			onSuccess: (data) => {
-				// console.log("data=>", data);
-				if (data.message === "ok") {
-					router.push(`/main`);
-				} else {
-					toast.error("LOGIN ACCESS FAIL");
-				}
-			},
-			onError: (error) => {
-				console.log("error=>", error);
-			},
-		});
+		// mutateSignIn(values, {
+		// 	onSuccess: (data) => {
+		// 		// console.log("data=>", data);
+		// 		if (data.message === "ok") {
+		// 			router.push(`/main`);
+		// 		} else {
+		// 			toast.error("LOGIN ACCESS FAIL");
+		// 		}
+		// 	},
+		// 	onError: (error) => {
+		// 		console.log("error=>", error);
+		// 	},
+		// });
+		const result = await dispatch(signIn(values));
+		if (signIn.fulfilled.match(result)) {
+			if (isAuthenticated) {
+				toast.success("เข้าสู่ระบบ สำเร็จ");
+				router.push("/main");
+			} else {
+				toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+			}
+		} else if (signIn.rejected.match(result)) {
+			toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+		}
 	};
 
 	return (
 		<>
 			<Toaster position="top-right" reverseOrder={false} />
-			{isPendingSignIn ? (
+			{isLoadingUser ? (
 				<Box
 					sx={{
 						display: "flex",

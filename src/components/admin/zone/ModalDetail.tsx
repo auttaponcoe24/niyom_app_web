@@ -1,37 +1,48 @@
-import { useCreateZone } from "@/src/hooks/useZone";
+import {
+	createZone,
+	getZoneAll,
+	IZoneAction,
+} from "@/src/store/slices/zoneSlice";
+import { RootState, useAppDispatch } from "@/src/store/store";
 import {
 	Box,
 	Button,
-	Card,
 	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
-	DialogContentText,
 	DialogTitle,
 	Divider,
-	Grid,
 	TextField,
-	Typography,
 } from "@mui/material";
 import React, { Dispatch, SetStateAction } from "react";
 import { useForm, Controller } from "react-hook-form";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 
 type Props = {
 	isOpenModal: boolean;
 	setIsOpenModal: Dispatch<SetStateAction<boolean>>;
+	isFinish: boolean;
+	setIsFinish: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function ModalDetail({ isOpenModal, setIsOpenModal }: Props) {
-	const { mutate: mutateCreateZone, isPending: isPendingCreateZone } =
-		useCreateZone();
+export default function ModalDetail({
+	isOpenModal,
+	setIsOpenModal,
+	isFinish,
+	setIsFinish,
+}: Props) {
+	const dispatch = useAppDispatch();
+	const { isLoading: isLoadingZone } = useSelector(
+		(state: RootState) => state.zoneSlice
+	);
 
 	const initialForm = {
 		zone_name: "",
 	};
 
-	const { control, handleSubmit, reset } = useForm<{ zone_name: string }>({
+	const { control, handleSubmit, reset } = useForm<IZoneAction>({
 		defaultValues: initialForm,
 	});
 
@@ -39,24 +50,28 @@ export default function ModalDetail({ isOpenModal, setIsOpenModal }: Props) {
 		setIsOpenModal(false);
 	};
 
-	const onSubmit = async (values: { zone_name: string }) => {
-		console.log(values);
+	const onSubmit = async (values: IZoneAction) => {
+		const result = await dispatch(createZone(values));
+		// console.log("result=>", result);
 
-		const onSuccess = () => {
-			setIsOpenModal(false);
-			toast.success("สร้างเขต สำเร็จ");
-		};
-		const onError = () => {
+		if (createZone.fulfilled.match(result)) {
+			if (!!result.payload) {
+				toast.success("สร้างเขต สำเร็จ");
+				setIsOpenModal(false);
+				setIsFinish(!isFinish);
+			} else {
+				toast.error("สร้างเขต ไม่สำเร็จ");
+			}
+		} else {
 			toast.error("สร้างเขต ไม่สำเร็จ");
-		};
-
-		mutateCreateZone(values, { onSuccess, onError });
+		}
 	};
+
 	return (
 		<Dialog open={isOpenModal} onClose={handleOnClose} fullWidth>
 			<DialogTitle>สร้างเขต</DialogTitle>
 			<Divider />
-			{isPendingCreateZone ? (
+			{isLoadingZone ? (
 				<Box
 					sx={{
 						display: "flex",

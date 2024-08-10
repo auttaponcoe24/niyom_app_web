@@ -1,7 +1,9 @@
+import userSlice from "@/src/store/slices/userSlice";
+import zoneSlice from "@/src/store/slices/zoneSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
 
-const reducer = {};
+const reducer = { userSlice, zoneSlice };
 
 export const store = configureStore({
 	reducer,

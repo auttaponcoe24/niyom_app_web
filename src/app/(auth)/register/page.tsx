@@ -17,37 +17,32 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Icons from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { User } from "@/src/interfaces/auth.interface";
+import { TSignUp } from "@/src/interfaces/auth.interface";
 import { useGetSignUp } from "@/src/hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
+import { RootState, useAppDispatch } from "@/src/store/store";
+import { signUp } from "@/src/store/slices/userSlice";
+import { useSelector } from "react-redux";
 
 type Props = {};
 
-type SignUp = User & {
-	confirm_password: string;
-};
-
 export default function RegisterPage({}: Props) {
 	const router = useRouter();
+	const dispatch = useAppDispatch();
+	const { isLoading: isLoadingUser } = useSelector(
+		(state: RootState) => state.userSlice
+	);
 
-	const {
-		mutate: mutateSignUp,
-		isPending: isPendingSignUp,
-		data: dataSignUp,
-	} = useGetSignUp();
-
-	console.log("dataSignUp", dataSignUp);
-
-	const initialValue: SignUp = {
-		email: "",
+	const initialValue: TSignUp = {
+		email: "@gmail.com",
 		password: "",
-		confirm_password: "",
+		confirmPassword: "",
 	};
 
 	const formValidateSchema = Yup.object().shape({
 		email: Yup.string().required("Username is required").trim(),
 		password: Yup.string().required("Password is required").trim(),
-		confirm_password: Yup.string()
+		confirmPassword: Yup.string()
 			.oneOf([Yup.ref("password")])
 			.required("Confirm Password is required"),
 	});
@@ -56,32 +51,35 @@ export default function RegisterPage({}: Props) {
 		control,
 		handleSubmit,
 		formState: { errors },
-	} = useForm<SignUp>({
+	} = useForm<TSignUp>({
 		defaultValues: initialValue,
 		resolver: yupResolver(formValidateSchema),
 	});
 
-	const handleOnSubmit = async (values: SignUp) => {
-		console.log(values);
+	const handleOnSubmit = async (values: TSignUp) => {
+		// console.log(values);
 
 		const onSuccess = () => {
-			toast.success("SIGN UP ACCESS SUCCESS");
+			toast.success("สร้างบัญชี สำเร็จ");
 			router.push("/login");
 		};
 		const onError = () => {
-			toast.error("SIGN UP ACCESS FAIL");
+			toast.error("สร้างบัญชี ไม่สำเร็จ");
 		};
 
-		mutateSignUp(values, {
-			onSuccess,
-			onError,
-		});
+		const result = await dispatch(signUp(values));
+
+		if (signUp.fulfilled.match(result)) {
+			onSuccess();
+		} else if (signUp.rejected.match(result)) {
+			onError();
+		}
 	};
 
 	return (
 		<>
 			<Toaster position="top-right" reverseOrder={false} />
-			{isPendingSignUp ? (
+			{isLoadingUser ? (
 				<Box
 					sx={{
 						display: "flex",
@@ -152,7 +150,7 @@ export default function RegisterPage({}: Props) {
 
 								<Controller
 									control={control}
-									name="confirm_password"
+									name="confirmPassword"
 									render={({ field }) => (
 										<TextField
 											{...field}
