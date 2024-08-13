@@ -1,28 +1,11 @@
 import { Roboto } from "next/font/google";
 import { createTheme } from "@mui/material/styles";
-import { blue, red } from "@mui/material/colors";
 
 const roboto = Roboto({
 	weight: ["300", "400", "500", "700"],
 	subsets: ["latin"],
 	display: "swap",
 });
-let mode = "light";
-let skin = "bordered";
-
-const lightColor = "76, 78, 100";
-const darkColor = "234, 234, 255";
-const mainColor = mode === "light" ? lightColor : darkColor;
-
-const defaultBgColor = () => {
-	if (skin === "bordered" && mode === "light") {
-		return "#FFF";
-	} else if (skin === "bordered" && mode === "dark") {
-		return "#30334E";
-	} else if (mode === "light") {
-		return "#F7F7F9";
-	} else return "#282A42";
-};
 
 const drawerWidth = 240;
 const theme = createTheme({
@@ -31,9 +14,10 @@ const theme = createTheme({
 			styleOverrides: {
 				paper: {
 					// backgroundImage: 'url("/static/img/background_menu.jpg")',
-					backgroundRepeat: "no-repeat",
-					backgroundPosition: "bottom",
+					// backgroundRepeat: "no-repeat",
+					// backgroundPosition: "bottom",
 					width: drawerWidth,
+					// backgroundColor: "#F7F7F9",
 				},
 			},
 		},
@@ -44,6 +28,15 @@ const theme = createTheme({
 						backgroundColor: "#60a5fa",
 					}),
 				}),
+			},
+		},
+		MuiCard: {
+			styleOverrides: {
+				root: {
+					// borderRadius: 12,
+					// paddingTop: 20,
+					// paddingBottom: 20,
+				},
 			},
 		},
 	},
@@ -109,25 +102,27 @@ const theme = createTheme({
 			A400: "#616161",
 			A700: "#303030",
 		},
-		text: {
-			primary: `rgba(${mainColor}, 0.87)`,
-			secondary: `rgba(${mainColor}, 0.68)`,
-			disabled: `rgba(${mainColor}, 0.38)`,
-		},
-		divider: `rgba(${mainColor}, 0.12)`,
 		background: {
-			paper: mode === "light" ? "#FFF" : "#30334E",
-			default: defaultBgColor(),
+			// paper: mode === "light" ? "#FFF" : "#30334E",
+			// default: defaultBgColor(),
+			paper: "#FFFFFF",
+			default: "#F7F7F9",
 		},
-		action: {
-			active: `rgba(${mainColor}, 0.54)`,
-			hover: `rgba(${mainColor}, 0.05)`,
-			hoverOpacity: 0.05,
-			selected: `rgba(${mainColor}, 0.08)`,
-			disabled: `rgba(${mainColor}, 0.26)`,
-			disabledBackground: `rgba(${mainColor}, 0.12)`,
-			focus: `rgba(${mainColor}, 0.12)`,
-		},
+		// text: {
+		// 	primary: `rgba(${mainColor}, 0.87)`,
+		// 	secondary: `rgba(${mainColor}, 0.68)`,
+		// 	disabled: `rgba(${mainColor}, 0.38)`,
+		// },
+		// divider: `rgba(${mainColor}, 0.12)`,
+		// action: {
+		// 	active: `rgba(${mainColor}, 0.54)`,
+		// 	hover: `rgba(${mainColor}, 0.05)`,
+		// 	hoverOpacity: 0.05,
+		// 	selected: `rgba(${mainColor}, 0.08)`,
+		// 	disabled: `rgba(${mainColor}, 0.26)`,
+		// 	disabledBackground: `rgba(${mainColor}, 0.12)`,
+		// 	focus: `rgba(${mainColor}, 0.12)`,
+		// },
 	},
 });
 

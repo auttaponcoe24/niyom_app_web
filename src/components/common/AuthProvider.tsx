@@ -15,11 +15,11 @@ export default function AuthProvider({ children }: Props) {
 	const path = usePathname();
 	const dispatch = useAppDispatch();
 
-	const {
-		data: dataUser,
-		isAuthenticated,
-		isAuthenticating,
-	} = useSelector((state: RootState) => state.userSlice);
+	const { isAuthenticated, isAuthenticating } = useSelector(
+		(state: RootState) => state.userSlice
+	);
+
+	// console.log("dataUser=>", dataUser);
 
 	useEffect(() => {
 		if (!isAuthenticated) {
@@ -45,7 +45,7 @@ export default function AuthProvider({ children }: Props) {
 	}, [isAuthenticated, isAuthenticating, path, router]);
 
 	// If fetching session (e.g., show spinner)
-	if (isAuthenticating) {
+	if (isAuthenticating && path !== "/login") {
 		return (
 			<Box
 				sx={{

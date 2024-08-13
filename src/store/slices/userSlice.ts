@@ -123,7 +123,6 @@ const userSlice = createSlice({
 		// getSession
 		builder
 			.addCase(getSession.pending, (state) => {
-				state.isLoading = true;
 				state.isAuthenticated = false;
 				state.isAuthenticating = true;
 			})
@@ -134,11 +133,9 @@ const userSlice = createSlice({
 					state.data = action.payload.result;
 					state.isAuthenticated = true;
 					state.isAuthenticating = false;
-					state.isLoading = false;
 				}
 			})
 			.addCase(getSession.rejected, (state) => {
-				state.isLoading = false;
 				state.isAuthenticated = false;
 				state.isAuthenticating = false;
 			});

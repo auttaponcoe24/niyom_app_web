@@ -29,13 +29,9 @@ type Props = {};
 export default function LoginPage({}: Props) {
 	const router = useRouter();
 	const dispatch = useAppDispatch();
-	const {
-		data: dataUser,
-		isLoading: isLoadingUser,
-		isAuthenticated,
-	} = useSelector((state: RootState) => state.userSlice);
-
-	console.log("dataUser=>", dataUser);
+	const { isLoading: isLoadingUser, isAuthenticated } = useSelector(
+		(state: RootState) => state.userSlice
+	);
 
 	// const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
 
@@ -59,27 +55,14 @@ export default function LoginPage({}: Props) {
 	});
 
 	const handleOnSubmit = async (values: TSignIn) => {
-		// console.log(values);
-		// mutateSignIn(values, {
-		// 	onSuccess: (data) => {
-		// 		// console.log("data=>", data);
-		// 		if (data.message === "ok") {
-		// 			router.push(`/main`);
-		// 		} else {
-		// 			toast.error("LOGIN ACCESS FAIL");
-		// 		}
-		// 	},
-		// 	onError: (error) => {
-		// 		console.log("error=>", error);
-		// 	},
-		// });
 		const result = await dispatch(signIn(values));
+
 		if (signIn.fulfilled.match(result)) {
-			if (isAuthenticated) {
+			if (result.payload.message === "no") {
+				toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+			} else {
 				toast.success("เข้าสู่ระบบ สำเร็จ");
 				router.push("/main");
-			} else {
-				toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
 			}
 		} else if (signIn.rejected.match(result)) {
 			toast.error("เข้าสู่ระบบ ไม่สำเร็จ");

@@ -5,6 +5,8 @@ export type TParams = {
 };
 
 export type TZoneData = {
-	id: number;
-	zone_name: string;
+	id: number | null;
+	zone_name?: string;
 };
+
+export type TMode = "create" | "edit" | "delete";
