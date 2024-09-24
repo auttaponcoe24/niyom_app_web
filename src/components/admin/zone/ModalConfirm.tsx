@@ -1,15 +1,9 @@
 import { deleteZone } from "@/src/store/slices/zoneSlice";
 import { RootState, useAppDispatch } from "@/src/store/store";
-import {
-	Box,
-	Button,
-	CircularProgress,
-	Dialog,
-	DialogTitle,
-	Divider,
-} from "@mui/material";
+import { Button, Divider, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction } from "react";
 import toast from "react-hot-toast";
+import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
 type Props = {
@@ -29,6 +23,7 @@ export default function ModalConfirm({
 	isFinish,
 	setIsFinish,
 }: Props) {
+	const { messages } = useIntl();
 	const { isFetchingDeleteZone } = useSelector(
 		(state: RootState) => state.zoneSlice
 	);
@@ -42,32 +37,39 @@ export default function ModalConfirm({
 	const handleOnConfirm = async () => {
 		const res = await dispatch(deleteZone(Number(zoneId)));
 		if (res.meta.requestStatus === "rejected") {
-			toast.error("ลบข้อมูล ไม่สำเร็จ");
+			notification.error({
+				message: messages["notification.api.resp.error"] as string,
+			});
 		} else {
-			toast.success("ลบข้อมูล สำเร็จ");
+			notification.success({
+				message: messages["notification.api.resp.success"] as string,
+			});
 			setIsOpenModalComfirm(false);
 			setIsFinish(!isFinish);
 		}
 	};
 
 	return (
-		<Dialog open={isOpenModalComfirm} onClose={handleOnClose} fullWidth>
-			<DialogTitle>{`ลบ`}</DialogTitle>
-			<Divider />
+		<Modal
+			open={isOpenModalComfirm}
+			onCancel={handleOnClose}
+			title={`ลบ`}
+			footer={null}
+		>
 			{isFetchingDeleteZone ? (
-				<Box
-					sx={{
+				<div
+					style={{
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
 						margin: 4,
 					}}
 				>
-					<CircularProgress />
-				</Box>
+					<Spin />
+				</div>
 			) : (
-				<Box
-					sx={{
+				<div
+					style={{
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "end",
@@ -75,19 +77,14 @@ export default function ModalConfirm({
 						margin: 2,
 					}}
 				>
-					<Button type="button" variant="outlined" onClick={handleOnClose}>
-						ยกเลิก
+					<Button type="default" onClick={handleOnClose}>
+						{messages["text.cancel"] as string}
 					</Button>
-					<Button
-						type="button"
-						variant="contained"
-						color="primary"
-						onClick={handleOnConfirm}
-					>
-						ยืนยัน
+					<Button type="primary" onClick={handleOnConfirm}>
+						{messages["text.confirm"] as string}
 					</Button>
-				</Box>
+				</div>
 			)}
-		</Dialog>
+		</Modal>
 	);
 }

@@ -7,20 +7,9 @@ import {
 	updateZone,
 } from "@/src/store/slices/zoneSlice";
 import { RootState, useAppDispatch } from "@/src/store/store";
-import {
-	Box,
-	Button,
-	CircularProgress,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
-	Divider,
-	TextField,
-} from "@mui/material";
+import { Button, Divider, Form, Input, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import toast from "react-hot-toast";
+import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
 type Props = {
@@ -44,7 +33,9 @@ export default function ModalDetail({
 	isFinish,
 	setIsFinish,
 }: Props) {
+	const { messages } = useIntl();
 	const dispatch = useAppDispatch();
+
 	const {
 		isLoading: isLoadingZone,
 		dataById: dataByIdZone,
@@ -53,13 +44,7 @@ export default function ModalDetail({
 	} = useSelector((state: RootState) => state.zoneSlice);
 	// console.log("dataZone=>", dataByIdZone);
 
-	var initialForm = {
-		zone_name: "",
-	};
-
-	const { control, handleSubmit, reset } = useForm<IZoneAction>({
-		defaultValues: initialForm,
-	});
+	const [form] = Form.useForm();
 
 	useEffect(() => {
 		if (isMode === "create") {
@@ -70,13 +55,12 @@ export default function ModalDetail({
 
 	useEffect(() => {
 		if (isMode === "edit" && dataByIdZone) {
-			reset({
+			form.setFieldsValue({
 				zone_name: dataByIdZone.result.zone_name,
 			});
 		} else {
-			reset(initialForm);
 		}
-	}, [dataByIdZone, isMode, reset]);
+	}, [dataByIdZone, isMode]);
 
 	const handleOnClose = () => {
 		setIsOpenModal(false);
@@ -84,21 +68,27 @@ export default function ModalDetail({
 		setIsMode(null);
 	};
 
-	const onSubmit = async (values: IZoneAction) => {
+	const handleOnSubmit = async (values: IZoneAction) => {
 		if (isMode === "create") {
 			const result = await dispatch(createZone(values));
 			// console.log("result=>", result);
 
 			if (createZone.fulfilled.match(result)) {
 				if (!!result.payload) {
-					toast.success("สร้างเขต สำเร็จ");
+					notification.success({
+						message: messages["notification.api.resp.success"] as string,
+					});
 					setIsOpenModal(false);
 					setIsFinish(!isFinish);
 				} else {
-					toast.error("สร้างเขต ไม่สำเร็จ");
+					notification.error({
+						message: messages["notification.api.resp.error"] as string,
+					});
 				}
 			} else {
-				toast.error("สร้างเขต ไม่สำเร็จ");
+				notification.error({
+					message: messages["notification.api.resp.error"] as string,
+				});
 			}
 		} else if (isMode === "edit") {
 			const result = await dispatch(
@@ -106,62 +96,56 @@ export default function ModalDetail({
 			);
 			console.log(result);
 			if (result.meta.requestStatus === "fulfilled") {
-				toast.success("แก้ไข สำเร็จ");
+				notification.success({
+					message: messages["notification.api.resp.success"] as string,
+				});
 				setIsOpenModal(false);
 				setIsFinish(!isFinish);
 			} else {
-				toast.error("แก้ไข ไม่สำเร็จ");
+				notification.error({
+					message: messages["notification.api.resp.error"] as string,
+				});
 			}
 		}
 	};
 
 	return (
-		<Dialog open={isOpenModal} onClose={handleOnClose} fullWidth>
-			<DialogTitle>{isMode === "create" ? "สร้างเขต" : "แก้ไขเขต"}</DialogTitle>
-			<Divider />
+		<Modal
+			open={isOpenModal}
+			onCancel={handleOnClose}
+			title={isMode === "create" ? "สร้างเขต" : "แก้ไขเขต"}
+			footer={null}
+			centered
+			destroyOnClose
+		>
 			{isLoadingZone || isLoadingByIdZone || isFetchingUpdateZone ? (
-				<Box
-					sx={{
+				<div
+					style={{
 						display: "flex",
 						alignItems: "center",
 						justifyContent: "center",
 						margin: 4,
 					}}
 				>
-					<CircularProgress />
-				</Box>
+					<Spin />
+				</div>
 			) : (
-				<form onSubmit={handleSubmit(onSubmit)}>
-					<DialogContent>
-						<Controller
-							control={control}
-							name="zone_name"
-							render={({ field }) => (
-								<TextField
-									{...field}
-									autoFocus
-									required
-									margin="dense"
-									id="name"
-									name="email"
-									label="ชื่อเขต"
-									type="text"
-									fullWidth
-									variant="outlined"
-								/>
-							)}
-						/>
-					</DialogContent>
-					<DialogActions>
-						<Button onClick={() => reset()} type="reset" variant="outlined">
-							ล้าง
-						</Button>
-						<Button type="submit" variant="contained" color="primary">
-							บันทึก
-						</Button>
-					</DialogActions>
-				</form>
+				<div>
+					<Form form={form} onFinish={handleOnSubmit} layout="vertical">
+						<Form.Item name="zone_name" label="ชื่อเขต">
+							<Input size="large" />
+						</Form.Item>
+						<div className="flex items-center justify-end gap-2 mt-2">
+							<Button htmlType="reset" type="default">
+								{messages["text.reset"] as string}
+							</Button>
+							<Button htmlType="submit" type="primary">
+								{messages["text.save"] as string}
+							</Button>
+						</div>
+					</Form>
+				</div>
 			)}
-		</Dialog>
+		</Modal>
 	);
 }

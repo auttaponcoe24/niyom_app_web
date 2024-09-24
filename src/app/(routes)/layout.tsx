@@ -1,47 +1,46 @@
 "use client";
-import DrawerHeader from "@/src/components/layouts/DrawerHeader";
-import Header from "@/src/components/layouts/Header";
-import Sidebar from "@/src/components/layouts/Sidebar";
-import { Box, CssBaseline, styled, useTheme } from "@mui/material";
-import { useState } from "react";
+import React from "react";
+
+import LayoutHeader from "@/src/components/layouts/LayoutHeader";
+import LayoutSidebar from "@/src/components/layouts/LayoutSidebar";
+import { Layout, theme } from "antd";
+const { Content } = Layout;
+
+const contentStyle: React.CSSProperties = {
+	textAlign: "center",
+	minHeight: 120,
+	lineHeight: "120px",
+	color: "#fff",
+	backgroundColor: "#0958d9",
+};
+
+const layoutStyle = {
+	// borderRadius: 8,
+	overflow: "hidden",
+	width: "100%",
+	// maxWidth: "calc(50% - 8px)",
+};
 
 export default function RoutesLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const theme = useTheme();
-	const [open, setOpen] = useState<boolean>(false);
-
-	const handleDrawerOpen = () => {
-		setOpen(true);
-	};
-
-	const handleDrawerClose = () => {
-		setOpen(false);
-	};
+	const {
+		token: { colorBgContainer, borderRadiusLG, boxShadow },
+	} = theme.useToken();
 
 	return (
-		<section>
-			<Box sx={{ display: "flex" }}>
-				<CssBaseline />
-				{/* Header */}
-				<Header open={open} handleDrawerOpen={handleDrawerOpen} />
+		<Layout style={{ minHeight: "100vh" }}>
+			<LayoutHeader />
 
-				{/* Sidebar */}
-				<Sidebar
-					theme={theme}
-					open={open}
-					handleDrawerClose={handleDrawerClose}
-				/>
+			<Layout hasSider>
+				<LayoutSidebar />
 
-				{/* Content */}
-				<Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-					<DrawerHeader />
-					{/* <React.Suspense fallback={<Loading />}>{children}</React.Suspense> */}
-					{children}
-				</Box>
-			</Box>
-		</section>
+				<Layout style={{ padding: "24px", marginLeft: 200 }}>
+					<Layout.Content>{children}</Layout.Content>
+				</Layout>
+			</Layout>
+		</Layout>
 	);
 }

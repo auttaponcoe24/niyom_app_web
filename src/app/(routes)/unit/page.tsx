@@ -1,11 +1,11 @@
-import Transaction from "@/src/components/admin/transaction";
+import UnitComponent from "@/src/components/admin/unit";
 import { Breadcrumb } from "antd";
 import Link from "next/link";
 import React from "react";
 
 type Props = {};
 
-export default function TransactionPage({}: Props) {
+export default function UnitPage({}: Props) {
 	return (
 		<section>
 			<header className="mb-5">
@@ -17,14 +17,14 @@ export default function TransactionPage({}: Props) {
 						},
 						{
 							key: 1,
-							title: "จัดการธุรกรรม",
+							title: "จัดการหน่วยมิเตอร์",
 						},
 					]}
 				/>
 			</header>
 
 			<div>
-				<Transaction />
+				<UnitComponent />
 			</div>
 		</section>
 	);

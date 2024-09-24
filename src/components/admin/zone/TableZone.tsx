@@ -1,13 +1,12 @@
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import Box from "@mui/material/Box";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Card, CardHeader, IconButton, Stack } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { RootState, useAppDispatch } from "@/src/store/store";
 import { useSelector } from "react-redux";
 import { TMode, TParams } from "@/src/interfaces/zone.interface";
 import { getZoneAll } from "@/src/store/slices/zoneSlice";
+import { Button, Card, Pagination, Table, TableColumnType } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { useIntl } from "react-intl";
 
 type Props = {
 	params: TParams;
@@ -28,6 +27,7 @@ export default function TableZone({
 	setIsOpenModalComfirm,
 	setIsMode,
 }: Props) {
+	const { messages } = useIntl();
 	const router = useRouter();
 	const dispatch = useAppDispatch();
 	const { data: dataZone, isLoading: isLoadingZone } = useSelector(
@@ -40,107 +40,92 @@ export default function TableZone({
 		dispatch(getZoneAll(params));
 	}, [params, isFinish, dispatch]);
 
-	const columns: GridColDef<any>[] = [
+	const columns: TableColumnType[] = [
 		{
-			flex: 0.1,
-			field: "no",
-			headerName: "ลำดับ",
-			minWidth: 80,
-			// align: "center",
-			// headerAlign: "center",
-			renderCell: ({ row }) => {
-				return <div>{row.no}</div>;
+			title: "ลำดับ",
+			align: "center",
+			width: 60,
+			render: (_, record) => {
+				return <div className="text-center">{record.no}</div>;
+			},
+		},
+
+		{
+			title: "ชื่อ",
+			align: "center",
+			width: 100,
+			render: (_, record) => {
+				return <div className="text-left">{record.zone_name}</div>;
 			},
 		},
 		{
-			flex: 0.75,
-			field: "zone_name",
-			headerName: "ชื่อ",
-			minWidth: 200,
-			renderCell: ({ row }) => <div>{row.zone_name}</div>,
-		},
-		{
-			flex: 0.15,
-			field: "management",
-			headerName: "จัดการ",
-			headerAlign: "center",
-			minWidth: 160,
-			renderCell: ({ row }) => {
+			title: "จัดการ",
+			align: "center",
+			width: 80,
+			render: (_, record) => {
 				return (
-					<Stack
-						direction={"row"}
-						spacing={1}
-						alignItems="center"
-						justifyContent="center"
-						width={`100%`}
-					>
-						<IconButton
-							aria-label="edit"
-							size="large"
+					<div className="flex items-center justify-center gap-2">
+						<EditOutlined
+							style={{ fontSize: 18 }}
 							onClick={() => {
-								setZoneId(Number(row.id));
+								setZoneId(Number(record.id));
 								setIsOpenModal(true);
 								setIsMode("edit");
 							}}
-						>
-							<Edit fontSize="inherit" />
-						</IconButton>
-						<IconButton
-							aria-label="delete"
-							size="large"
+						/>
+
+						<DeleteOutlined
+							style={{ fontSize: 18 }}
 							onClick={() => {
 								setIsMode("delete");
-								setZoneId(Number(row.id));
+								setZoneId(Number(record.id));
 								setIsOpenModalComfirm(true);
 							}}
-						>
-							<Delete fontSize="inherit" />
-						</IconButton>
-					</Stack>
+						/>
+					</div>
 				);
 			},
 		},
 	];
+
 	return (
-		<Card elevation={4}>
-			{/* <CardHeader title="จัดการเขต" /> */}
-			<Box
-				sx={{
-					minHeight: 300,
-					maxHeight: 500,
+		<div>
+			<Table
+				rowKey={(record) => record.no}
+				columns={columns}
+				dataSource={
+					dataZone?.result?.map((item: any, index: number) => ({
+						...item,
+						no: (params.start - 1) * params.page_size + (index + 1),
+					})) ?? []
+				}
+				scroll={{
+					x: 300,
 				}}
-			>
-				<DataGrid
-					rows={
-						dataZone?.result?.map((item: any, index: number) => ({
-							...item,
-							no: (params.start - 1) * params.page_size + (index + 1),
-						})) ?? []
+				loading={isLoadingZone}
+				pagination={false}
+			/>
+
+			<div className="flex items-center justify-end my-4">
+				<Pagination
+					showSizeChanger
+					current={params.start}
+					total={dataZone?.total_record}
+					showTotal={(total) =>
+						`${messages["pagination.total"] as string} ${total} ${
+							messages["pagination.item"] as string
+						}`
 					}
-					columns={columns}
-					initialState={{
-						pagination: {
-							paginationModel: {
-								pageSize: params.page_size, // กำหนดค่า pageSize เริ่มต้น
-								page: params.start - 1, // กำหนดค่า page เริ่มต้น
-							},
-						},
-					}}
-					pageSizeOptions={[10, 25, 50]} // สามารถเลือกขนาดหน้าที่ต้องการได้
-					paginationMode="server" // สำหรับการจัดการ pagination บน server-side
-					rowCount={dataZone?.total_record || 0} // กำหนดจำนวนรายการทั้งหมดจาก server
-					onPaginationModelChange={(paginationModel) => {
-						// อัพเดทสถานะ pagination เมื่อมีการเปลี่ยนแปลง
+					onChange={(page: number, pageSize: number) => {
 						setParams((prev) => ({
 							...prev,
-							page_size: paginationModel.pageSize,
-							start: paginationModel.page + 1,
+							start: page,
+							page_size: pageSize,
 						}));
 					}}
-					disableRowSelectionOnClick
-					loading={isLoadingZone}
+					responsive
 				/>
-			</Box>
-		</Card>
+			</div>
+		</div>
 	);
 }

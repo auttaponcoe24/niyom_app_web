@@ -1,9 +1,10 @@
 "use client";
-import { Box } from "@mui/material";
 import React from "react";
+import { useIntl } from "react-intl";
 
 type Props = {};
 
 export default function MainPage({}: Props) {
-	return <Box>Main</Box>;
+	const { messages } = useIntl();
+	return <div>{messages["text1"] as string}</div>;
 }

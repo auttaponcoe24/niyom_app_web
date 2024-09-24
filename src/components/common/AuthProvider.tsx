@@ -1,7 +1,7 @@
 "use client";
 import { getSession } from "@/src/store/slices/userSlice";
-import { RootState, store, useAppDispatch } from "@/src/store/store";
-import { Box, CircularProgress } from "@mui/material";
+import { RootState, useAppDispatch } from "@/src/store/store";
+import { Spin } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -15,48 +15,41 @@ export default function AuthProvider({ children }: Props) {
 	const path = usePathname();
 	const dispatch = useAppDispatch();
 
-	const { isAuthenticated, isAuthenticating } = useSelector(
+	const { isAuthenticated, isAuthenticating, accessToken } = useSelector(
 		(state: RootState) => state.userSlice
 	);
 
-	// console.log("dataUser=>", dataUser);
-
 	useEffect(() => {
-		if (!isAuthenticated) {
-			dispatch(getSession());
-		}
-	}, [dispatch, isAuthenticated]);
+		dispatch(getSession());
+	}, [accessToken]);
 
 	// Handle redirect based on authentication status and path
 	useEffect(() => {
-		if (isAuthenticating) return;
-
-		if (path !== "/login" && path !== "/register") {
-			if (!isAuthenticated) {
+		if (!isAuthenticating) {
+			if (!isAuthenticated && path !== "/login" && path !== "/register") {
 				router.push("/login");
-			} else if (path === "/") {
-				router.push("/main");
-			}
-		} else {
-			if (isAuthenticated) {
+			} else if (
+				isAuthenticated &&
+				(path === "/login" || path === "/register" || path === "/")
+			) {
 				router.push("/main");
 			}
 		}
 	}, [isAuthenticated, isAuthenticating, path, router]);
 
 	// If fetching session (e.g., show spinner)
-	if (isAuthenticating && path !== "/login") {
+	if (isAuthenticating) {
 		return (
-			<Box
-				sx={{
+			<div
+				style={{
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
 					height: "100vh",
 				}}
 			>
-				<CircularProgress color="primary" size={60} />
-			</Box>
+				<Spin size="large" />
+			</div>
 		);
 	}
 

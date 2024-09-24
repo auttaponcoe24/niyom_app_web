@@ -41,12 +41,7 @@ const signin = async (body: TSignIn) => {
 	try {
 		const res = await httpClient.post(`/auth/login`, body);
 		const { token } = res.data;
-		cookies().set(ACCESS_TOKEN_KEY, token, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV !== "development",
-			sameSite: "strict",
-			path: "/",
-		});
+		cookies().set(ACCESS_TOKEN_KEY, token);
 		return NextResponse.json(res.data);
 	} catch (error) {
 		console.log(error);

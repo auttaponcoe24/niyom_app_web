@@ -1,0 +1,17 @@
+{
+	"text1": "สวัสดี",
+	"sidebar.main": "หน้าหลัก",
+	"sidebar.zone": "จัดการเขต",
+	"sidebar.customer": "จัดการลูกค้า",
+	"sidebar.unit": "จัดการหน่วยมิเตอร์",
+	"sidebar.transaction": "จัดการธุรกรรม",
+	"notification.api.resp.success": "ดำเนินการสำเร็จ",
+	"notification.api.resp.error": "ดำเนินการไม่สำเร็จ",
+	"text.save": "บันทึก",
+	"text.cancel": "ยกเลิก",
+	"text.search": "ค้นหา",
+	"text.reset": "ล้าง",
+	"text.confirm": "ยืนยัน",
+	"pagination.total": "ทั้งหมด",
+	"pagination.item": "รายการ"
+}

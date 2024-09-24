@@ -1,15 +1,21 @@
 import { TSignIn, TSignUp } from "@/src/interfaces/auth.interface";
 import { UserData } from "@/src/interfaces/user.interface";
-import { GET_SESSION, SIGN_IN, SIGN_UP } from "@/src/services/auth.api";
+import {
+	GET_SESSION,
+	SIGN_IN,
+	SIGN_OUT,
+	SIGN_UP,
+} from "@/src/services/auth.api";
 import httpClient from "@/src/utils/httpClient";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { AxiosRequestConfig } from "axios";
+import { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
 
 type UserState = {
 	accessToken: string;
 	isLoading: boolean;
 	isAuthenticated: boolean;
 	isAuthenticating: boolean;
+	username?: string;
 	data?: UserData;
 };
 
@@ -25,26 +31,10 @@ export const signUp = createAsyncThunk(
 
 export const signIn = createAsyncThunk(
 	"user/signIn",
-	async (values: TSignIn) => {
+	async (values: TSignIn): Promise<any> => {
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const res = await SIGN_IN(values);
-		if (typeof window !== "undefined") {
-			// แทรก request interceptor เมื่ออยู่ใน client-side เท่านั้น
-			httpClient.interceptors.request.use(
-				(config?: AxiosRequestConfig | any) => {
-					if (config && config.headers) {
-						// คุณสามารถเพิ่มการตั้งค่าหรือ header ที่ต้องการก่อนที่จะส่ง request ได้
-						config.headers.Authorization = `Bearer ${res?.token}`;
-					}
-
-					return config;
-				},
-				(error) => {
-					return Promise.reject(error);
-				}
-			);
-		}
 
 		return res;
 	}
@@ -56,7 +46,7 @@ export const getSession = createAsyncThunk(
 		const res = await GET_SESSION();
 
 		// set access token
-		if (typeof window !== "undefined") {
+		if (typeof window !== "undefined" && !!res.token) {
 			// แทรก request interceptor เมื่ออยู่ใน client-side เท่านั้น
 			httpClient.interceptors.request.use(
 				(config?: AxiosRequestConfig | any) => {
@@ -76,11 +66,17 @@ export const getSession = createAsyncThunk(
 	}
 );
 
+export const signOut = createAsyncThunk("user/signOut", async () => {
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
+	return SIGN_OUT();
+});
+
 const initialState: UserState = {
 	accessToken: "",
 	isLoading: false,
 	isAuthenticated: false,
-	isAuthenticating: true,
+	isAuthenticating: false,
 };
 
 const userSlice = createSlice({
@@ -111,8 +107,10 @@ const userSlice = createSlice({
 				state.isLoading = false;
 				state.isAuthenticated = true;
 				state.isAuthenticating = false;
-				state.accessToken = action.payload.token;
-				state.data = action.payload.result;
+				if (action.payload && action.payload.token && action.payload.result) {
+					state.accessToken = action.payload?.token;
+					state.data = action.payload?.result;
+				}
 			})
 			.addCase(signIn.rejected, (state, action) => {
 				state.isLoading = false;
@@ -133,12 +131,19 @@ const userSlice = createSlice({
 					state.data = action.payload.result;
 					state.isAuthenticated = true;
 					state.isAuthenticating = false;
+					state.username = action.payload?.result?.firstname;
 				}
 			})
 			.addCase(getSession.rejected, (state) => {
 				state.isAuthenticated = false;
 				state.isAuthenticating = false;
 			});
+
+		// signOut
+		builder.addCase(signOut.fulfilled, (state) => {
+			state.isAuthenticated = false;
+			state.accessToken = "";
+		});
 	},
 });
 

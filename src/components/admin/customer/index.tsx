@@ -1,28 +1,26 @@
 "use client";
 
-import ModalConfirm from "@/src/components/admin/zone/ModalConfirm";
-import ModalDetail from "@/src/components/admin/zone/ModalDetail";
-import TableZone from "@/src/components/admin/zone/TableZone";
-import { TMode, TParams } from "@/src/interfaces/zone.interface";
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Input, Layout } from "antd";
+import ModalDetail from "@/src/components/admin/customer/ModalDetail";
+import TableCustomer from "@/src/components/admin/customer/TableCustomer";
+import { TMode, TParams } from "@/src/interfaces/customer.interface";
 import React, { useState } from "react";
-import { useIntl } from "react-intl";
+import ModalConfirm from "@/src/components/admin/customer/ModalConfirm";
+import { Button, Card, Input } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 
 type Props = {};
 
-export default function ZoneComponent({}: Props) {
-	const { messages } = useIntl();
+export default function CustomerComponent({}: Props) {
 	const [params, setParams] = useState<TParams>({
 		page_size: 10,
 		start: 1,
 		keywords: "",
 	});
-	const [zoneId, setZoneId] = useState<number | null>(null);
-	const [isMode, setIsMode] = useState<TMode | null>(null);
+	const [customerId, setCustomerId] = useState<number | null>(null);
+	const [isMode, setIsMode] = useState<TMode>(null);
 	const [isFinish, setIsFinish] = useState<boolean>(false);
-	const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-	const [isOpenModalComfirm, setIsOpenModalComfirm] = useState<boolean>(false);
+	const [isOpenModalDetail, setIsOpenModalDetail] = useState<boolean>(false);
+	const [isOpenModalConfirm, setIsOpenModalConfirm] = useState<boolean>(false);
 	const [keywords, setKeywords] = useState<string>("");
 
 	return (
@@ -31,7 +29,8 @@ export default function ZoneComponent({}: Props) {
 			<div className="flex items-center justify-between my-4">
 				<div className="flex items-center justify-center gap-2">
 					<Input
-						placeholder={messages["text.search"] as string}
+						variant="outlined"
+						placeholder="ค้นหา"
 						size="middle"
 						value={keywords}
 						onChange={(e) => setKeywords(e.target.value)}
@@ -45,7 +44,7 @@ export default function ZoneComponent({}: Props) {
 							}))
 						}
 					>
-						{messages["text.search"] as string}
+						ค้นหา
 					</Button>
 					<Button
 						type="default"
@@ -57,13 +56,13 @@ export default function ZoneComponent({}: Props) {
 							setKeywords("");
 						}}
 					>
-						{messages["text.reset"] as string}
+						ล้าง
 					</Button>
 				</div>
 				<button
 					className="w-[36px] h-[36px] rounded-full border-none bg-primary cursor-pointer"
 					onClick={() => {
-						setIsOpenModal(true);
+						setIsOpenModalDetail(true);
 						setIsMode("create");
 					}}
 				>
@@ -71,35 +70,32 @@ export default function ZoneComponent({}: Props) {
 				</button>
 			</div>
 
-			<Divider />
-
 			{/* table */}
-			<TableZone
+			<TableCustomer
 				params={params}
 				setParams={setParams}
-				setZoneId={setZoneId}
-				setIsOpenModal={setIsOpenModal}
-				setIsOpenModalComfirm={setIsOpenModalComfirm}
+				setCustomerId={setCustomerId}
+				setIsOpenModalDetail={setIsOpenModalDetail}
+				setIsOpenModalConfirm={setIsOpenModalConfirm}
 				setIsMode={setIsMode}
 				isFinish={isFinish}
 			/>
 
 			<ModalDetail
-				isOpenModal={isOpenModal}
-				setIsOpenModal={setIsOpenModal}
+				isModalOpen={isOpenModalDetail}
+				setIsModalOpen={setIsOpenModalDetail}
 				isMode={isMode}
 				setIsMode={setIsMode}
-				zoneId={zoneId}
-				setZoneId={setZoneId}
+				customerId={customerId}
+				setCustomerId={setCustomerId}
 				isFinish={isFinish}
 				setIsFinish={setIsFinish}
 			/>
 
 			<ModalConfirm
-				zoneId={zoneId}
-				setZoneId={setZoneId}
-				isOpenModalComfirm={isOpenModalComfirm}
-				setIsOpenModalComfirm={setIsOpenModalComfirm}
+				isOpenModal={isOpenModalConfirm}
+				setIsOpenModal={setIsOpenModalConfirm}
+				customerId={customerId}
 				isFinish={isFinish}
 				setIsFinish={setIsFinish}
 			/>
