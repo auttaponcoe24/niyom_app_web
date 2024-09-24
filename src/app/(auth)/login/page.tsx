@@ -1,166 +1,96 @@
 "use client";
 
-import {
-	Box,
-	Button,
-	Card,
-	CardContent,
-	CircularProgress,
-	InputAdornment,
-	styled,
-	TextField,
-	Typography,
-} from "@mui/material";
-import React from "react";
-import { Controller, useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Icons from "@mui/icons-material";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "@/src/interfaces/auth.interface";
-import { useGetSignIn } from "@/src/hooks/useAuth";
+import { TSignIn } from "@/src/interfaces/auth.interface";
 import toast, { Toaster } from "react-hot-toast";
+import { RootState, useAppDispatch } from "@/src/store/store";
+import { useSelector } from "react-redux";
+import { signIn } from "@/src/store/slices/userSlice";
+import { Button, Form, Input, Spin, Typography } from "antd";
 
 type Props = {};
 
-type SignIn = {
-	email: string;
-	password: string;
-};
-
 export default function LoginPage({}: Props) {
 	const router = useRouter();
+	const dispatch = useAppDispatch();
+	const { isLoading: isLoadingUser, isAuthenticated } = useSelector(
+		(state: RootState) => state.userSlice
+	);
 
-	const { mutate: mutateSignIn, isPending: isPendingSignIn } = useGetSignIn();
+	const [form] = Form.useForm();
 
-	const initialValue: SignIn = {
-		email: "@gmail.com",
-		password: "",
-	};
+	const handleOnSubmit = async (values: TSignIn) => {
+		// console.log("values=>", values);
 
-	const formValidateSchema = Yup.object().shape({
-		email: Yup.string().required("Username is required").trim(),
-		password: Yup.string().required("Password is required").trim(),
-	});
+		const result = await dispatch(signIn(values));
 
-	const {
-		control,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<User>({
-		defaultValues: initialValue,
-		resolver: yupResolver(formValidateSchema),
-	});
-
-	const handleOnSubmit = async (values: SignIn) => {
-		console.log(values);
-
-		const onSuccess = () => {
-			router.push("/");
-		};
-
-		const onError = () => {
-			toast.error("LOGIN ACCESS FAIL");
-		};
-
-		mutateSignIn(values, {
-			onSuccess,
-			onError,
-		});
+		if (signIn.fulfilled.match(result)) {
+			if (result?.payload?.message === "no") {
+				// toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+			} else {
+				// toast.success("เข้าสู่ระบบ สำเร็จ");
+				router.push("/main");
+			}
+		} else if (signIn.rejected.match(result)) {
+			toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+		}
 	};
 
 	return (
 		<>
-			{isPendingSignIn ? (
-				<Box
-					sx={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						height: "100vh",
-					}}
-				>
-					<CircularProgress size={80} />
-				</Box>
+			{isLoadingUser ? (
+				<div>
+					<Spin size="large" />
+				</div>
 			) : (
-				<Box className="flex justify-center items-center h-screen">
-					<Card className="max-w-[345px] mt-10" elevation={3}>
-						<CardContent>
-							<Typography variant="h4">Sign In</Typography>
-						</CardContent>
+				<div className="">
+					<div className="max-w-[345px] w-[300px] bg-white/80 rounded-lg shadow-lg p-6">
+						<Typography.Title level={2} className="uppercase">
+							Sign In
+						</Typography.Title>
+						<Form form={form} onFinish={handleOnSubmit}>
+							<Form.Item
+								name={`email`}
+								// label="อีเมล์"
+								rules={[
+									{
+										required: true,
+										message: "กรุณาป้อนอีเมล์",
+									},
+								]}
+							>
+								<Input placeholder="อีเมล์" size="large" />
+							</Form.Item>
+							<Form.Item
+								name={"password"}
+								// label="รหัสผ่าน"
+								rules={[
+									{
+										required: true,
+										message: "กรุณาป้อนรหัสผ่าน",
+									},
+								]}
+							>
+								<Input.Password placeholder="รหัสผ่าน" size="large" />
+							</Form.Item>
 
-						<CardContent>
-							<form onSubmit={handleSubmit(handleOnSubmit)}>
-								<Controller
-									control={control}
-									name="email"
-									render={({ field }) => {
-										return (
-											<TextField
-												{...field}
-												variant="outlined"
-												margin="normal"
-												fullWidth
-												InputProps={{
-													startAdornment: (
-														<InputAdornment position="start">
-															<Icons.Email />
-														</InputAdornment>
-													),
-												}}
-												label="เข้าสู่ระบบ"
-												autoComplete="email"
-												autoFocus
-											/>
-										);
+							<div className="flex flex-col gap-2">
+								<Button type="primary" htmlType="submit" size="large">
+									เข้าสู่ระบบ
+								</Button>
+								<Button
+									type="default"
+									size="large"
+									onClick={() => {
+										router.push("/register");
 									}}
-								/>
-
-								<Controller
-									control={control}
-									name="password"
-									render={({ field }) => (
-										<TextField
-											{...field}
-											variant="outlined"
-											margin="normal"
-											fullWidth
-											InputProps={{
-												startAdornment: (
-													<InputAdornment position="start">
-														<Icons.Password />
-													</InputAdornment>
-												),
-											}}
-											label="รหัสผ่าน"
-											autoComplete="password"
-											autoFocus
-											type="password"
-										/>
-									)}
-								/>
-
-								<div className="flex flex-col items-center justify-center gap-2 mt-2">
-									<Button
-										fullWidth
-										variant="contained"
-										type="submit"
-										color="primary"
-									>
-										<Typography variant="button">Sign In</Typography>
-									</Button>
-									<Button
-										fullWidth
-										variant="outlined"
-										type="button"
-										onClick={() => router.push("/register")}
-									>
-										<Typography variant="button">Register</Typography>
-									</Button>
-								</div>
-							</form>
-						</CardContent>
-					</Card>
+								>
+									สร้างบัญชี
+								</Button>
+							</div>
+						</Form>
+					</div>
 
 					<style jsx global>{`
 						body {
@@ -192,9 +122,7 @@ export default function LoginPage({}: Props) {
 							z-index: -1;
 						}
 					`}</style>
-
-					<Toaster position="top-right" reverseOrder={false} />
-				</Box>
+				</div>
 			)}
 		</>
 	);

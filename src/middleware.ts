@@ -2,25 +2,44 @@ import { ACCESS_TOKEN_KEY } from "@/src/utils/constant";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export default function middleware(req: NextRequest) {
+export default function middleware(request: NextRequest) {
 	const cookiesStore = cookies();
-	const accessTokenKey = cookiesStore.get(ACCESS_TOKEN_KEY);
+	const accessToken = cookiesStore.get(ACCESS_TOKEN_KEY)?.value;
 
-	const path = req.nextUrl.pathname;
+	const { pathname } = request.nextUrl;
 
-	if (accessTokenKey && accessTokenKey.value) {
-		if (path === "/login" || path === "/register" || path === "/") {
-			return NextResponse.redirect(new URL("/main", req.url));
+	const isAuthPage = pathname === "/login" || pathname === "/register";
+	const isRootPath = pathname === "/";
+
+	// ถ้ามี access token และอยู่ในหน้า login, register หรือ root, เปลี่ยนเส้นทางไปหน้า main
+	if (accessToken) {
+		if (isAuthPage || isRootPath) {
+			return NextResponse.redirect(new URL("/main", request.url));
 		}
-
-		return NextResponse.next({ request: req });
-	} else if (path !== "/login" && path !== "/register") {
-		return NextResponse.redirect(new URL("/login", req.url));
+		return NextResponse.next();
 	}
 
-	return NextResponse.next({ request: req });
+	// ถ้าไม่มี access token และพยายามเข้าถึงหน้าอื่นนอกจาก login หรือ register, เปลี่ยนเส้นทางไปหน้า login
+	if (!isAuthPage) {
+		return NextResponse.redirect(new URL("/login", request.url));
+	}
+
+	// return NextResponse.next();
+	return NextResponse.next({
+		request,
+	});
 }
 
 export const config = {
-	matcher: ["/", "/login/:path*", "/register/:path*", "/main/:path*"],
+	matcher: [
+		"/",
+		"/login/:path*",
+		"/register/:path*",
+		"/main/:path*",
+		"/zone/:path*",
+		"/customer/:path*",
+		"/report/:path*",
+		"/unit/:path*",
+		"/transaction/:path*",
+	],
 };

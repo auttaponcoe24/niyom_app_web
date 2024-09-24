@@ -1,5 +1,10 @@
-export type User = {
+export type TSignUp = {
 	email: string;
 	password: string;
-	confirm_password?: string;
+	confirmPassword: string;
+};
+
+export type TSignIn = {
+	email: string;
+	password: string;
 };

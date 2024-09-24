@@ -1,12 +1,13 @@
 "use client";
 import theme from "@/src/components/ThemeRegistry/theme";
-import { ThemeProvider } from "@mui/material";
 import React, { ReactNode } from "react";
+import { ConfigProvider } from "antd";
+import type { AppProps } from "next/app";
 
 type Props = {
 	children: ReactNode;
 };
 
 export default function ThemeRegistry({ children }: Props) {
-	return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+	return <ConfigProvider theme={theme}>{children}</ConfigProvider>;
 }

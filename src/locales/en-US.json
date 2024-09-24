@@ -1,0 +1,17 @@
+{
+	"text1": "Hello",
+	"sidebar.main": "Main",
+	"sidebar.zone": "Zone",
+	"sidebar.customer": "Customer",
+	"sidebar.unit": "Unit",
+	"sidebar.transaction": "Transaction",
+	"notification.api.resp.success": "Success",
+	"notification.api.resp.error": "Error",
+	"text.save": "Save",
+	"text.cancel": "Cancel",
+	"text.search": "Search",
+	"text.reset": "Reset",
+	"text.confirm": "Confirm",
+	"pagination.total": "Total",
+	"pagination.item": "Items"
+}

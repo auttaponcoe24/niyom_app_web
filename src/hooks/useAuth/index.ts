@@ -1,19 +1,37 @@
-import { User } from "@/src/interfaces/auth.interface";
-import { SIGN_IN, SIGN_UP } from "@/src/services/auth.api";
-import { useMutation } from "@tanstack/react-query";
+import { TSignIn, TSignUp } from "@/src/interfaces/auth.interface";
+import {
+	GET_SESSION,
+	SIGN_IN,
+	SIGN_OUT,
+	SIGN_UP,
+} from "@/src/services/auth.api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 // sign-up
 export const useGetSignUp = () => {
+	const delay = (ms: number) =>
+		new Promise((resolve) => setTimeout(resolve, ms));
 	return useMutation({
 		mutationKey: ["use_get_signup"],
-		mutationFn: (value: User) => SIGN_UP(value),
+		mutationFn: async (value: TSignUp) => {
+			await delay(2000);
+			SIGN_UP(value);
+		},
 	});
 };
 
 // sign-in
 export const useGetSignIn = () => {
 	return useMutation({
-		mutationKey: ["use_get_signin"],
-		mutationFn: (values: User) => SIGN_IN(values),
+		mutationKey: ["get_signin"],
+		mutationFn: async (values: TSignIn) => await SIGN_IN(values),
+	});
+};
+
+// GET_SESSION
+export const useGetSession = () => {
+	return useQuery({
+		queryKey: ["get_session"],
+		queryFn: async () => GET_SESSION(),
 	});
 };
