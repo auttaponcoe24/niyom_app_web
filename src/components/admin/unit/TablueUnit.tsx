@@ -36,7 +36,7 @@ export default function TablueUnit({ params, setParams }: Props) {
 
 	useEffect(() => {
 		refetchUnit();
-	}, [params]);
+	}, [refetchUnit, params]);
 
 	useEffect(() => {
 		if (dataUnit) {

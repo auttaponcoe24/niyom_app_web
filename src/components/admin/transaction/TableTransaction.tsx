@@ -24,7 +24,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 
 	useEffect(() => {
 		refetchTransaction();
-	}, [params]);
+	}, [refetchTransaction, params]);
 
 	useEffect(() => {
 		if (dataTransaction) {

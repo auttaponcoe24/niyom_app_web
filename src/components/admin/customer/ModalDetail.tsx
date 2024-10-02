@@ -4,11 +4,11 @@ import {
 	getCustomerId,
 	updateCustomer,
 } from "@/src/store/slices/customerSlice";
-import { useGetPrefix } from "@/src/store/slices/prefixSlice";
+import { getPrefix } from "@/src/store/slices/prefixSlice";
 import { getZoneAll } from "@/src/store/slices/zoneSlice";
 import { RootState, useAppDispatch } from "@/src/store/store";
 import { Button, Form, Input, Modal, notification, Select, Spin } from "antd";
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 
@@ -53,28 +53,31 @@ export default function ModalDetail({
 
 	// console.log("dataCustomerId=>", dataCustomerId);
 
-	const initialForm: TActionValues = {
-		card_id: "",
-		firstname: "",
-		lastname: "",
-		address: "",
-		house_number: "",
-		phone: "",
-		zoneId: null,
-		prefixId: null,
-	};
+	const initialForm: TActionValues = useMemo(
+		() => ({
+			card_id: "",
+			firstname: "",
+			lastname: "",
+			address: "",
+			house_number: "",
+			phone: "",
+			zoneId: null,
+			prefixId: null,
+		}),
+		[]
+	);
 
 	useEffect(() => {
 		dispatch(getZoneAll({ start: 1, page_size: 999, keywords: "" }));
-		dispatch(useGetPrefix());
-	}, []);
+		dispatch(getPrefix());
+	}, [dispatch]);
 
 	useEffect(() => {
 		if (isMode === "create") {
 		} else if (isMode === "edit" && customerId) {
 			dispatch(getCustomerId(customerId));
 		}
-	}, [isMode, customerId, dispatch]);
+	}, [dispatch, isMode, customerId]);
 
 	useEffect(() => {
 		if (isMode === "edit" && dataCustomerId) {
@@ -92,7 +95,7 @@ export default function ModalDetail({
 		} else {
 			form.setFieldsValue(initialForm);
 		}
-	}, [dataCustomerId, isMode]);
+	}, [form, initialForm, dataCustomerId, isMode]);
 
 	const handleOnClose = () => {
 		setIsModalOpen(false);

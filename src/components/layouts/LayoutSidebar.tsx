@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Layout, Menu, MenuProps, theme } from "antd";
@@ -12,12 +12,15 @@ import {
 import { useIntl } from "react-intl";
 const { Sider } = Layout;
 
-type Props = {};
+type Props = {
+	selectKey: string[];
+	setSelectKey: Dispatch<SetStateAction<string[]>>;
+};
 
-export default function LayoutSidebar({}: Props) {
+export default function LayoutSidebar({ selectKey, setSelectKey }: Props) {
 	const pathname = usePathname();
 	const { messages } = useIntl();
-	const [selectKey, setSelectKey] = useState(["0"]);
+	// const [selectKey, setSelectKey] = useState(["0"]);
 
 	useEffect(() => {
 		if (pathname.startsWith("/zone")) {
@@ -72,6 +75,9 @@ export default function LayoutSidebar({}: Props) {
 	} = theme.useToken();
 	return (
 		<Sider
+			breakpoint="md"
+			width={200}
+			trigger={true}
 			style={{
 				background: colorBgContainer,
 				position: "fixed",

@@ -1,10 +1,8 @@
 "use client";
 
 import React from "react";
-import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import { TSignUp } from "@/src/interfaces/auth.interface";
-import { useGetSignUp } from "@/src/hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { RootState, useAppDispatch } from "@/src/store/store";
 import { signUp } from "@/src/store/slices/userSlice";

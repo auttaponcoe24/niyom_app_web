@@ -21,7 +21,7 @@ export default function AuthProvider({ children }: Props) {
 
 	useEffect(() => {
 		dispatch(getSession());
-	}, [accessToken]);
+	}, [dispatch, accessToken]);
 
 	// Handle redirect based on authentication status and path
 	useEffect(() => {

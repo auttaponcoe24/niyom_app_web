@@ -12,7 +12,7 @@ const initialState: TInitialState = {
 };
 
 // GET_PREFIX
-export const useGetPrefix = createAsyncThunk("prefilx/getAll", async () => {
+export const getPrefix = createAsyncThunk("prefilx/getAll", async () => {
 	await new Promise((resolve) => setTimeout(resolve, 1000));
 
 	const res = await GET_PREFIX();
@@ -25,16 +25,16 @@ const prefixSlice = createSlice({
 	reducers: {},
 	extraReducers: (builder) => {
 		builder
-			.addCase(useGetPrefix.pending, (state, action) => {
+			.addCase(getPrefix.pending, (state, action) => {
 				state.isLoading = true;
 			})
-			.addCase(useGetPrefix.fulfilled, (state, action) => {
+			.addCase(getPrefix.fulfilled, (state, action) => {
 				state.isLoading = false;
 				if (action.payload) {
 					state.data = action.payload;
 				}
 			})
-			.addCase(useGetPrefix.rejected, (state, action) => {
+			.addCase(getPrefix.rejected, (state, action) => {
 				state.isLoading = false;
 			});
 	},

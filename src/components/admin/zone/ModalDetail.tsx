@@ -60,7 +60,7 @@ export default function ModalDetail({
 			});
 		} else {
 		}
-	}, [dataByIdZone, isMode]);
+	}, [form, dataByIdZone, isMode]);
 
 	const handleOnClose = () => {
 		setIsOpenModal(false);

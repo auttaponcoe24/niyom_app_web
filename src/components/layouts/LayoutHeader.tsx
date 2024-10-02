@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { RootState, useAppDispatch } from "@/src/store/store";
@@ -9,6 +8,8 @@ import {
 } from "@/src/components/common/AppContextProvider";
 import {
 	Avatar,
+	Button,
+	Drawer,
 	Dropdown,
 	Layout,
 	MenuProps,
@@ -17,23 +18,33 @@ import {
 	theme,
 } from "antd";
 import {
+	DashboardOutlined,
 	DownOutlined,
+	FormOutlined,
+	HomeOutlined,
+	InsertRowBelowOutlined,
 	MoonOutlined,
 	SunOutlined,
 	UserOutlined,
 } from "@ant-design/icons";
 import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
+import { Dispatch, SetStateAction, useState } from "react";
+import { HiOutlineBars3 } from "react-icons/hi2";
+import Link from "next/link";
 
 const { Header } = Layout;
 
-type Props = {};
+type Props = {
+	setSelectKey: Dispatch<SetStateAction<string[]>>;
+};
 
-export default function LayoutHeader({}: Props) {
+export default function LayoutHeader({ setSelectKey }: Props) {
 	const router = useRouter();
 	const dispatch = useAppDispatch();
 	const { username } = useSelector((state: RootState) => state.userSlice);
 	const { messages } = useIntl();
+	const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false);
 	const { language, switchLanguage } = useLanguage();
 	const { isDarkMode, switchDarkMode } = useSwitchMode();
 	const {
@@ -85,6 +96,10 @@ export default function LayoutHeader({}: Props) {
 		},
 	];
 
+	const handleOnCloseDrawer = () => {
+		setIsOpenDrawer(false);
+	};
+
 	return (
 		<>
 			<Header
@@ -100,9 +115,18 @@ export default function LayoutHeader({}: Props) {
 					color: "#FFFFFF",
 				}}
 			>
-				<div className="text-2xl">Logo</div>
+				<div className="text-2xl hidden md:block">Logo</div>
+				<Button
+					className="!text-white md:!hidden !bg-inherit"
+					type="text"
+					icon={<HiOutlineBars3 size={30} />}
+					onClick={() => {
+						setIsOpenDrawer(true);
+					}}
+				/>
+
 				<div className="flex items-center justify-center gap-4">
-					<div>
+					<div className="hidden md:block">
 						{isDarkMode ? (
 							<>
 								<SunOutlined
@@ -119,7 +143,7 @@ export default function LayoutHeader({}: Props) {
 							</>
 						)}
 					</div>
-					<div>
+					<div className="hidden md:block">
 						<Select
 							style={{
 								width: 68,
@@ -148,6 +172,94 @@ export default function LayoutHeader({}: Props) {
 					</>
 				</div>
 			</Header>
+
+			<Drawer
+				// title="Basic Drawer"
+				onClose={handleOnCloseDrawer}
+				open={isOpenDrawer}
+				placement="left"
+				closeIcon={null}
+			>
+				<div className="flex flex-col justify-between h-full">
+					<div className="flex flex-col items-center justify-center gap-4 mt-4">
+						<button
+							onClick={() => {
+								router.push(`/main`);
+								setIsOpenDrawer(false);
+								setSelectKey(["0"]);
+							}}
+							className={`flex items-center justify-center gap-2 w-full py-2 border-none bg-inherit transition-all  hover:bg-primary hover:text-white rounded-md cursor-pointer ${
+								isDarkMode ? "text-white" : "text-black"
+							}`}
+						>
+							<HomeOutlined style={{ fontSize: 20 }} />
+							<div>{messages["sidebar.main"] as string}</div>
+						</button>
+						<button
+							onClick={() => {
+								router.push("/zone");
+								setIsOpenDrawer(false);
+								setSelectKey(["1"]);
+							}}
+							className={`flex items-center justify-center gap-2 w-full py-2 border-none bg-inherit transition-all  hover:bg-primary hover:text-white rounded-md cursor-pointer ${
+								isDarkMode ? "text-white" : "text-black"
+							}`}
+						>
+							<DashboardOutlined style={{ fontSize: 20 }} />
+							<div>{messages["sidebar.zone"] as string}</div>
+						</button>
+						<button
+							onClick={() => {
+								router.push("/customer");
+								setIsOpenDrawer(false);
+								setSelectKey(["2"]);
+							}}
+							className={`flex items-center justify-center gap-2 w-full py-2 border-none bg-inherit transition-all  hover:bg-primary hover:text-white rounded-md cursor-pointer ${
+								isDarkMode ? "text-white" : "text-black"
+							}`}
+						>
+							<UserOutlined style={{ fontSize: 20 }} />
+							<div>{messages["sidebar.customer"] as string}</div>
+						</button>
+						<button
+							onClick={() => {
+								router.push("/unit");
+								setIsOpenDrawer(false);
+								setSelectKey(["3"]);
+							}}
+							className={`flex items-center justify-center gap-2 w-full py-2 border-none bg-inherit transition-all  hover:bg-primary hover:text-white rounded-md cursor-pointer ${
+								isDarkMode ? "text-white" : "text-black"
+							}`}
+						>
+							<FormOutlined style={{ fontSize: 20 }} />
+							<div>{messages["sidebar.unit"] as string}</div>
+						</button>
+						<button
+							onClick={() => {
+								router.push("/transaction");
+								setIsOpenDrawer(false);
+								setSelectKey(["4"]);
+							}}
+							className={`flex items-center justify-center gap-2 w-full py-2 border-none bg-inherit transition-all  hover:bg-primary hover:text-white rounded-md cursor-pointer ${
+								isDarkMode ? "text-white" : "text-black"
+							}`}
+						>
+							<InsertRowBelowOutlined style={{ fontSize: 20 }} />
+							<div>{messages["sidebar.transaction"] as string}</div>
+						</button>
+					</div>
+					<div className="flex items-center justify-end">
+						<Button
+							type="text"
+							htmlType="button"
+							onClick={() => handleOnSignOut()}
+							className="!text-md"
+						>
+							ออกจากระบบ
+						</Button>
+					</div>
+				</div>
+			</Drawer>
 		</>
 	);
 }
