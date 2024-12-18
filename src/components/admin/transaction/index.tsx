@@ -13,8 +13,7 @@ export default function Transaction({}: Props) {
 		start: 1,
 		page_size: 30,
 		keywords: "",
-		month: "",
-		year: "",
+		date: "",
 		type: "W",
 		zoneId: 0,
 	});

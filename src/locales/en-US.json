@@ -1,5 +1,7 @@
 {
 	"text1": "Hello",
+	"main": "Main",
+	"report": "Report",
 	"sidebar.main": "Main",
 	"sidebar.zone": "Zone",
 	"sidebar.customer": "Customer",

@@ -1,5 +1,7 @@
 {
 	"text1": "สวัสดี",
+	"main": "หน้าหลัก",
+	"report": "รายงาน",
 	"sidebar.main": "หน้าหลัก",
 	"sidebar.zone": "จัดการเขต",
 	"sidebar.customer": "จัดการลูกค้า",

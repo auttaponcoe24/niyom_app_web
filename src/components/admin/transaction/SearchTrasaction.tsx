@@ -40,13 +40,11 @@ export default function SearchTrasaction({ params, setParams }: Props) {
 
 	const handleOnSubmitForm = (values: any) => {
 		// console.log("values=>", values);
-		const month = dayjs(values.date).format("M");
-		const year = dayjs(values.date).format("YYYY");
+		const dateFormat = dayjs(values.date).format("YYYY-MM");
 
 		setParams((prev) => ({
 			...prev,
-			month,
-			year,
+			date: dateFormat,
 			keywords: values.keywords,
 			type: values.type,
 			zoneId: values.zoneId,

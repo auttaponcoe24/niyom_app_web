@@ -17,7 +17,7 @@ type Props = {
 	setParams: Dispatch<SetStateAction<TParams>>;
 };
 
-export default function TablueUnit({ params, setParams }: Props) {
+export default function TableUnit({ params, setParams }: Props) {
 	const { messages } = useIntl();
 	const [dataTable, setDataTable] = useState<any[]>([]);
 	// console.log("dataTable=>", dataTable);

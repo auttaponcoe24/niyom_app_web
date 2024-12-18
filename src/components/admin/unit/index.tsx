@@ -1,6 +1,6 @@
 "use client";
 import SearchUnit from "@/src/components/admin/unit/SearchUnit";
-import TablueUnit from "@/src/components/admin/unit/TablueUnit";
+import TableUnit from "@/src/components/admin/unit/TableUnit";
 import { TParams } from "@/src/interfaces/unit.interface";
 import { Card, Divider } from "antd";
 import React, { useState } from "react";
@@ -31,7 +31,7 @@ export default function UnitComponent({}: Props) {
 
 			{/* Table */}
 			<Card>
-				<TablueUnit params={params} setParams={setParams} />
+				<TableUnit params={params} setParams={setParams} />
 			</Card>
 		</div>
 	);

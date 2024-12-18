@@ -1,6 +1,21 @@
-import { useGetTransaction } from "@/src/hooks/useTransaction";
-import { TParams } from "@/src/interfaces/transaction.interface";
-import { Button, Input, Pagination, Table, TableColumnsType } from "antd";
+import {
+	useGetTransaction,
+	useUpdateOrCreateTransaction,
+} from "@/src/hooks/useTransaction";
+import {
+	TGetDataTransaction,
+	TParams,
+	TUpdateOrCreateTransaction,
+} from "@/src/interfaces/transaction.interface";
+import {
+	Button,
+	Input,
+	notification,
+	Pagination,
+	Table,
+	TableColumnsType,
+} from "antd";
+import dayjs from "dayjs";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -11,7 +26,9 @@ type Props = {
 
 export default function TableTransaction({ params, setParams }: Props) {
 	const { messages } = useIntl();
-	const [dataTable, setDataTable] = useState<any[]>([]);
+	const [dataTable, setDataTable] = useState<TGetDataTransaction[] | null>(
+		null
+	);
 
 	console.log("dataTable=>", dataTable);
 
@@ -22,13 +39,20 @@ export default function TableTransaction({ params, setParams }: Props) {
 		refetch: refetchTransaction,
 	} = useGetTransaction(params);
 
+	const {
+		mutate: mutateUpdateOrCreateTransaction,
+		isPending: isPendingUpdateOrCreateTransaction,
+	} = useUpdateOrCreateTransaction();
+
 	useEffect(() => {
 		refetchTransaction();
 	}, [refetchTransaction, params]);
 
 	useEffect(() => {
-		if (dataTransaction) {
-			setDataTable(dataTransaction.customers);
+		if (dataTransaction && !(dataTransaction instanceof Error)) {
+			setDataTable(dataTransaction.data);
+		} else {
+			console.log(dataTransaction?.message);
 		}
 	}, [dataTransaction]);
 
@@ -38,7 +62,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 			align: "center",
 			width: 80,
 			render: (_, record) => {
-				return <div className="text-center">{record.house_number}</div>;
+				return <div className="text-center">{record.houseNumber}</div>;
 			},
 		},
 		{
@@ -48,7 +72,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 			render: (_, record) => {
 				return (
 					<div className="text-center">
-						{record?.transactions[0]?.type === "W" ? "น้ำ" : "ไฟฟ้า"}
+						{record?.type === "W" ? "น้ำ" : "ไฟฟ้า"}
 					</div>
 				);
 			},
@@ -62,31 +86,44 @@ export default function TableTransaction({ params, setParams }: Props) {
 			},
 		},
 		{
-			title: "ชื่อ",
+			title: "ชื่อ - สกุล",
 			align: "left",
 			width: 140,
 			render: (_, record) => {
-				return <div className="text-left">{record.firstname}</div>;
+				return (
+					<div className="text-left">
+						{record.prefix} {record.fullname}
+					</div>
+				);
 			},
 		},
+
 		{
-			title: "นามสกุล",
-			align: "left",
+			title: `หน่วยมิเตอร์ ${
+				params.date
+					? dayjs(params.date).subtract(1, "month").format("MMMYYYY")
+					: ""
+			}`,
+			align: "center",
 			width: 140,
-			render: (_, record) => {
-				return <div className="text-left">{record.lastname}</div>;
+			render: (_, record, index) => {
+				return (
+					<div className="text-center">
+						{dataTable ? dataTable[index]?.unitOld?.unitNumber : ""}
+					</div>
+				);
 			},
 		},
 		{
 			title: `หน่วยมิเตอร์ ${
-				!!params.month ? `${params.month}/${params.year}` : ""
+				params.date ? dayjs(params.date).format("MMMYYYY") : ""
 			}`,
 			align: "center",
 			width: 140,
 			render: (_, record, index: number) => {
 				return (
 					<div className="text-center">
-						{dataTable[index]?.transactions[0]?.unit_new?.unit_number}
+						{dataTable && dataTable[index]?.unitNew.unitNumber}
 						{/* <Input
 							style={{ textAlign: "center" }}
 							value={dataTable[index].transactions[0].unit_new.unit_number}
@@ -114,29 +151,11 @@ export default function TableTransaction({ params, setParams }: Props) {
 			},
 		},
 		{
-			title: `หน่วยมิเตอร์ ${
-				!!params.month
-					? `${Number(params.month) === 1 ? "12" : Number(params.month) - 1}/${
-							Number(params.month) === 1 ? Number(params.year) - 1 : params.year
-					  }`
-					: ""
-			}`,
-			align: "center",
-			width: 140,
-			render: (_, record, index) => {
-				return (
-					<div className="text-center">
-						{dataTable[index]?.transactions[0]?.unit_old?.unit_number}
-					</div>
-				);
-			},
-		},
-		{
 			title: "หน่วยที่ใช้",
 			align: "center",
 			width: 100,
 			render: (_, record, index) => {
-				return <div>{record?.transactions[0]?.unit_used}</div>;
+				return <div>{record?.unitUsed}</div>;
 			},
 		},
 		{
@@ -144,7 +163,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 			align: "center",
 			width: 100,
 			render: (_, record, index) => {
-				return <div>{record?.transactions[0]?.amount}</div>;
+				return <div>{record?.amount}</div>;
 			},
 		},
 		{
@@ -152,7 +171,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 			align: "center",
 			width: 100,
 			render: (_, record, index) => {
-				return <div>{record?.transactions[0]?.over_due}</div>;
+				return <div>{record?.overDue}</div>;
 			},
 		},
 		{
@@ -160,19 +179,63 @@ export default function TableTransaction({ params, setParams }: Props) {
 			align: "center",
 			width: 100,
 			render: (_, record, index) => {
-				return <div>{record?.transactions[0]?.total_price}</div>;
+				return <div>{record?.totalPrice}</div>;
 			},
 		},
 	];
 
-	const handleOnSave = () => {};
+	const handleOnSave = () => {
+		if (dataTable) {
+			const values: TUpdateOrCreateTransaction[] = [
+				...dataTable.map((item, index) => {
+					return {
+						id: item.id,
+						date: item.date,
+						month: item.month,
+						year: item.year,
+						type: item.type === "W" || item.type === "E" ? item.type : "W", // แปลง type ให้ตรง
+						unitOldId: item.unitOldId,
+						unitNewId: item.unitNewId,
+						unitUsed: item.unitUsed,
+						amount: item.amount,
+						overDue: item.overDue,
+						totalPrice: item.totalPrice,
+						status: item.status,
+						zoneId: item.zoneId,
+						customerId: item.customerId,
+					};
+				}),
+			];
+			console.log(values);
+
+			// mutateUpdateOrCreateTransaction(values, {
+			// 	onSuccess: (success) => {
+			// 		if (success) {
+			// 			notification.success({
+			// 				message: messages["notification.api.resp.success"] as string,
+			// 			});
+			// 			refetchTransaction();
+			// 		} else {
+			// 			notification.error({
+			// 				message: messages["notification.api.resp.error"] as string,
+			// 			});
+			// 		}
+			// 	},
+			// 	onError: (error) => {
+			// 		notification.error({
+			// 			message: messages["notification.api.resp.error"] as string,
+			// 		});
+			// 	},
+			// });
+		}
+	};
 
 	return (
 		<div>
 			<Table
 				rowKey={(record) => record.id}
 				columns={columns}
-				dataSource={dataTable}
+				dataSource={dataTable ?? []}
 				loading={isLoadingTransaction || isFetchingTransaction}
 				pagination={false}
 			/>
@@ -182,7 +245,7 @@ export default function TableTransaction({ params, setParams }: Props) {
 					type="primary"
 					htmlType="button"
 					onClick={handleOnSave}
-					// loading={isPendingUpdateOrCreateUnit}
+					loading={isPendingUpdateOrCreateTransaction}
 				>
 					{messages["text.save"] as string}
 				</Button>
