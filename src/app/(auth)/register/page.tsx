@@ -2,10 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { TSignUp } from "@/src/interfaces/auth.interface";
-import toast, { Toaster } from "react-hot-toast";
 import { RootState, useAppDispatch } from "@/src/store/store";
-import { signUp } from "@/src/store/slices/userSlice";
 import { useSelector } from "react-redux";
 import { Button, Form, Input, notification, Spin, Typography } from "antd";
 
@@ -13,37 +10,16 @@ type Props = {};
 
 export default function RegisterPage({}: Props) {
 	const router = useRouter();
-	const dispatch = useAppDispatch();
-	const { isLoading: isLoadingUser } = useSelector(
-		(state: RootState) => state.userSlice
-	);
 
 	const [form] = Form.useForm();
 
-	const handleOnSubmit = async (values: TSignUp) => {
+	const handleOnSubmit = async (values: any) => {
 		// console.log(values);
-		const onSuccess = () => {
-			toast.success("สร้างบัญชี สำเร็จ");
-			router.push("/login");
-		};
-		const onError = () => {
-			notification.error({
-				message: "สร้างบัญชี ไม่สำเร็จ",
-			});
-		};
-
-		const result = await dispatch(signUp(values));
-
-		if (signUp.fulfilled.match(result)) {
-			onSuccess();
-		} else if (signUp.rejected.match(result)) {
-			onError();
-		}
 	};
 
 	return (
 		<>
-			{isLoadingUser ? (
+			{/* {isLoadingUser ? (
 				<div
 					style={{
 						display: "flex",
@@ -335,7 +311,7 @@ export default function RegisterPage({}: Props) {
 				// 		}
 				// 	`}</style>
 				// </Box>
-			)}
+			)} */}
 		</>
 	);
 }

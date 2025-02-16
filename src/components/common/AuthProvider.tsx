@@ -1,10 +1,8 @@
 "use client";
-import { getSession } from "@/src/store/slices/userSlice";
-import { RootState, useAppDispatch } from "@/src/store/store";
+import httpClient from "@/src/utils/httpClient";
 import { Spin } from "antd";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 
 type Props = {
 	children: React.ReactNode;
@@ -13,32 +11,29 @@ type Props = {
 export default function AuthProvider({ children }: Props) {
 	const router = useRouter();
 	const path = usePathname();
-	const dispatch = useAppDispatch();
 
-	const { isAuthenticated, isAuthenticating, accessToken } = useSelector(
-		(state: RootState) => state.userSlice
-	);
+	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		dispatch(getSession());
-	}, [dispatch, accessToken]);
-
-	// Handle redirect based on authentication status and path
-	useEffect(() => {
-		if (!isAuthenticating) {
-			if (!isAuthenticated && path !== "/login" && path !== "/register") {
-				router.push("/login");
-			} else if (
-				isAuthenticated &&
-				(path === "/login" || path === "/register" || path === "/")
-			) {
-				router.push("/main");
-			}
+		if (localStorage.getItem("accessToken")) {
+			httpClient
+				.get(`/api/auth/session`, {
+					baseURL: process.env.NEXT_PUBLIC_BASE_URL_LOCAL_API,
+				})
+				.then((res) => {
+					// setAuthUser(res.data.user);
+				})
+				.catch((err) => console.log(err))
+				.finally(() => {
+					setIsLoading(false);
+				});
+		} else {
+			setIsLoading(false);
 		}
-	}, [isAuthenticated, isAuthenticating, path, router]);
+	}, []);
 
 	// If fetching session (e.g., show spinner)
-	if (isAuthenticating) {
+	if (isLoading) {
 		return (
 			<div
 				style={{

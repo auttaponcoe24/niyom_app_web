@@ -1,11 +1,8 @@
-import customerSlice from "@/src/store/slices/customerSlice";
-import prefixSlice from "@/src/store/slices/prefixSlice";
-import userSlice from "@/src/store/slices/userSlice";
-import zoneSlice from "@/src/store/slices/zoneSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
+import authSlice from "@/src/store/slices/authSlice";
 
-const reducer = { userSlice, zoneSlice, customerSlice, prefixSlice };
+const reducer = { authSlice };
 
 export const store = configureStore({
 	reducer,

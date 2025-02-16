@@ -1,4 +1,4 @@
-import { TSignIn } from "@/src/interfaces/auth.interface";
+import { SignIn } from "@/src/interfaces/auth.interface";
 import { ACCESS_TOKEN_KEY } from "@/src/utils/constant";
 import httpClient from "@/src/utils/httpClient";
 import { cookies } from "next/headers";
@@ -40,11 +40,11 @@ export const POST = async (
 
 // ########### controllers #############
 
-const signin = async (body: TSignIn) => {
+const signin = async (body: SignIn) => {
 	try {
-		const res = await httpClient.post(`/auth/login`, body);
-		const { token } = res.data;
-		cookies().set(ACCESS_TOKEN_KEY, token);
+		const res = await httpClient.post(`/api/auth/login`, body);
+		const { accessToken } = res.data;
+		cookies().set("accessToken", accessToken);
 		return NextResponse.json(res.data);
 	} catch (error: any) {
 		console.error(
@@ -61,7 +61,7 @@ const signin = async (body: TSignIn) => {
 const signout = async (req: NextRequest) => {
 	try {
 		const cookiesStore = cookies();
-		cookiesStore.delete(ACCESS_TOKEN_KEY);
+		cookiesStore.delete("accessToken");
 		return NextResponse.json({ message: "ok" });
 	} catch (error) {
 		return NextResponse.json({ message: "no" });
@@ -71,9 +71,9 @@ const signout = async (req: NextRequest) => {
 const getSession = async (req: NextRequest) => {
 	try {
 		const cookiesStore = cookies();
-		const accessTokenKey = cookiesStore.get(ACCESS_TOKEN_KEY);
+		const accessTokenKey = cookiesStore.get("accessToken");
 		if (!!accessTokenKey?.value) {
-			const res = await httpClient.get(`/auth/profile`, {
+			const res = await httpClient.get(`/api/auth/profile`, {
 				headers: {
 					Authorization: `Bearer ${accessTokenKey?.value}`,
 				},

@@ -14,7 +14,7 @@ type Props = {};
 export default function ZoneComponent({}: Props) {
 	const { messages } = useIntl();
 	const [params, setParams] = useState<TParams>({
-		page_size: 10,
+		pageSize: 10,
 		start: 1,
 		keywords: "",
 	});

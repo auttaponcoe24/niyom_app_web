@@ -1,10 +1,9 @@
-import { ACCESS_TOKEN_KEY } from "@/src/utils/constant";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export default function middleware(request: NextRequest) {
 	const cookiesStore = cookies();
-	const accessToken = cookiesStore.get(ACCESS_TOKEN_KEY)?.value;
+	const accessToken = cookiesStore.get("accessToken")?.value;
 
 	const { pathname } = request.nextUrl;
 
@@ -38,8 +37,8 @@ export const config = {
 		"/main/:path*",
 		"/zone/:path*",
 		"/customer/:path*",
-		"/report/:path*",
 		"/unit/:path*",
 		"/transaction/:path*",
+		"/report/:path*",
 	],
 };

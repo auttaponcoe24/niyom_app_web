@@ -1,129 +1,131 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TSignIn } from "@/src/interfaces/auth.interface";
-import toast, { Toaster } from "react-hot-toast";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { useSelector } from "react-redux";
-import { signIn } from "@/src/store/slices/userSlice";
-import { Button, Form, Input, Spin, Typography } from "antd";
+import { Button, Checkbox, Form, Input, notification } from "antd";
+
+import Link from "next/link";
+import { useSignIn } from "@/src/hooks/useAuth";
+
+interface LoginForm {
+	emailOrCardId: string;
+	password: string;
+}
 
 type Props = {};
 
 export default function LoginPage({}: Props) {
 	const router = useRouter();
-	const dispatch = useAppDispatch();
-	const { isLoading: isLoadingUser, isAuthenticated } = useSelector(
-		(state: RootState) => state.userSlice
-	);
 
-	const [form] = Form.useForm();
+	const [form] = Form.useForm<LoginForm>();
 
-	const handleOnSubmit = async (values: TSignIn) => {
-		// console.log("values=>", values);
+	const [rememberMe, setRememberMe] = useState(false);
 
-		const result = await dispatch(signIn(values));
+	const { mutate: signIn, isPending: isPendingSignIn } = useSignIn();
 
-		if (signIn.fulfilled.match(result)) {
-			if (result?.payload?.message === "no") {
-				// toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
-			} else {
-				// toast.success("เข้าสู่ระบบ สำเร็จ");
-				router.push("/main");
-			}
-		} else if (signIn.rejected.match(result)) {
-			toast.error("เข้าสู่ระบบ ไม่สำเร็จ");
+	useEffect(() => {
+		const savedEmail = localStorage.getItem("rememberedEmail");
+		if (savedEmail) {
+			form.setFieldsValue({ emailOrCardId: savedEmail });
+			setRememberMe(true);
 		}
+	}, [form]);
+
+	const handleOnSubmit = async (values: LoginForm) => {
+		if (values.emailOrCardId) {
+			localStorage.setItem("rememberedEmail", values.emailOrCardId);
+		} else {
+			localStorage.removeItem("rememberedEmail");
+		}
+
+		signIn(values, {
+			onSuccess: (success) => {
+				if (success) {
+					notification.success({
+						message: "Login Successfully",
+					});
+					localStorage.setItem("user", JSON.stringify(success));
+					localStorage.setItem("accessToken", success.accessToken);
+					router.push("/main");
+				} else {
+					notification.error({
+						message: "Login Failed",
+					});
+				}
+			},
+			onError: () => {
+				notification.error({
+					message: "Login Failed",
+				});
+			},
+		});
 	};
 
 	return (
-		<>
-			{isLoadingUser ? (
-				<div>
-					<Spin size="large" />
-				</div>
-			) : (
-				<div className="">
-					<div className="max-w-[345px] w-[300px] bg-white/80 rounded-lg shadow-lg p-6">
-						<Typography.Title level={2} className="uppercase">
-							Sign In
-						</Typography.Title>
-						<Form form={form} onFinish={handleOnSubmit}>
-							<Form.Item
-								name={`email`}
-								// label="อีเมล์"
-								rules={[
-									{
-										required: true,
-										message: "กรุณาป้อนอีเมล์",
-									},
-								]}
-							>
-								<Input placeholder="อีเมล์" size="large" />
-							</Form.Item>
-							<Form.Item
-								name={"password"}
-								// label="รหัสผ่าน"
-								rules={[
-									{
-										required: true,
-										message: "กรุณาป้อนรหัสผ่าน",
-									},
-								]}
-							>
-								<Input.Password placeholder="รหัสผ่าน" size="large" />
-							</Form.Item>
+		<div className="flex h-screen w-full items-center justify-center bg-gray-900">
+			<div className="flex w-full max-w-sm flex-col gap-4 rounded-large px-8 pb-10 pt-6">
+				<p className="pb-4 text-left text-3xl font-semibold text-white">
+					Log In
+					<span aria-label="emoji" className="ml-2" role="img">
+						👋
+					</span>
+				</p>
+				<Form
+					layout="vertical"
+					className="flex flex-col gap-4"
+					form={form}
+					onFinish={handleOnSubmit}
+				>
+					<Form.Item
+						name={`emailOrCardId`}
+						label={<div className="text-white">Email</div>}
+						rules={[
+							{
+								required: true,
+							},
+						]}
+					>
+						<Input placeholder="Enter your email" />
+					</Form.Item>
+					<Form.Item
+						name={`password`}
+						label={<div className="text-white">Password</div>}
+						rules={[
+							{
+								required: true,
+							},
+						]}
+					>
+						<Input.Password placeholder="Enter your password" />
+					</Form.Item>
 
-							<div className="flex flex-col gap-2">
-								<Button type="primary" htmlType="submit" size="large">
-									เข้าสู่ระบบ
-								</Button>
-								<Button
-									type="default"
-									size="large"
-									onClick={() => {
-										router.push("/register");
-									}}
-								>
-									สร้างบัญชี
-								</Button>
-							</div>
-						</Form>
+					<div className="flex w-full items-center justify-between px-1 py-2">
+						<Checkbox
+							name="remember"
+							checked={rememberMe}
+							onChange={(e) => setRememberMe(e.target.checked)}
+						>
+							<div className="text-white">Remember me</div>
+						</Checkbox>
+						<Link className="text-default-500" href="#">
+							Forgot password?
+						</Link>
 					</div>
-
-					<style jsx global>{`
-						body {
-							height: 100vh;
-							margin: 0;
-							background-size: cover;
-							background-image: url("/images/pages/bgAuth1.jpg");
-							text-align: center;
-							backdrop-filter: blur(4px);
-							display: flex;
-							align-items: center;
-							justify-content: center;
-							color: white;
-							position: relative;
-						}
-
-						body::before {
-							content: "";
-							position: absolute;
-							top: 0;
-							left: 0;
-							right: 0;
-							bottom: 0;
-							background: linear-gradient(
-								to bottom,
-								rgba(0, 0, 0, 0.5),
-								rgba(0, 0, 0, 0.5)
-							);
-							z-index: -1;
-						}
-					`}</style>
-				</div>
-			)}
-		</>
+					<Button
+						className="w-full"
+						type="primary"
+						htmlType="submit"
+						loading={isPendingSignIn}
+					>
+						Log In
+					</Button>
+				</Form>
+				<p className="text-center text-small">
+					<Link className="no-underline text-blue-600" href="#">
+						Create an account
+					</Link>
+				</p>
+			</div>
+		</div>
 	);
 }

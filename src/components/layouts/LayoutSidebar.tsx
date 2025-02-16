@@ -1,16 +1,17 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Layout, Menu, MenuProps, theme } from "antd";
-import {
-	DashboardOutlined,
-	FormOutlined,
-	HomeOutlined,
-	InsertRowBelowOutlined,
-	UserOutlined,
-} from "@ant-design/icons";
 import { useIntl } from "react-intl";
+import {
+	MdOutlineDashboardCustomize,
+	MdOutlineLocationOn,
+	MdOutlineReceiptLong,
+	MdOutlineWaterDrop,
+} from "react-icons/md";
 const { Sider } = Layout;
+import { FaBolt } from "react-icons/fa";
+import { AiOutlineUser } from "react-icons/ai";
 
 type Props = {
 	selectKey: string[];
@@ -22,14 +23,16 @@ export default function LayoutSidebar({ selectKey, setSelectKey }: Props) {
 	const { messages } = useIntl();
 	// const [selectKey, setSelectKey] = useState(["0"]);
 
+	// console.log("pathname=>", pathname);
+
 	useEffect(() => {
-		if (pathname.startsWith("/zone")) {
+		if (pathname.includes("/zone")) {
 			setSelectKey(["1"]);
-		} else if (pathname.startsWith(`/customer`)) {
+		} else if (pathname.includes(`/customer`)) {
 			setSelectKey(["2"]);
-		} else if (pathname.startsWith("/unit")) {
+		} else if (pathname.includes("/unit")) {
 			setSelectKey(["3"]);
-		} else if (pathname.startsWith("/transaction")) {
+		} else if (pathname.includes("/transaction")) {
 			setSelectKey(["4"]);
 		} else {
 			setSelectKey(["0"]);
@@ -39,35 +42,40 @@ export default function LayoutSidebar({ selectKey, setSelectKey }: Props) {
 	const itemsMenu: MenuProps["items"] = [
 		{
 			key: 0,
-			icon: <HomeOutlined style={{ fontSize: 20 }} />,
+			icon: <MdOutlineDashboardCustomize size={20} />,
 			label: <Link href={`/main`}>{messages["sidebar.main"] as string}</Link>,
 		},
 		{
 			key: 1,
-			icon: <DashboardOutlined style={{ fontSize: 20 }} />,
+			icon: <MdOutlineLocationOn size={20} />,
 			label: <Link href={`/zone`}>{messages["sidebar.zone"] as string}</Link>,
 		},
 		{
 			key: 2,
-			icon: <UserOutlined style={{ fontSize: 20 }} />,
+			icon: <AiOutlineUser style={{ fontSize: 20 }} />,
 			label: (
 				<Link href={`/customer`}>{messages["sidebar.customer"] as string}</Link>
 			),
 		},
-		{
-			key: 3,
-			icon: <FormOutlined style={{ fontSize: 20 }} />,
-			label: <Link href={`/unit`}>{messages["sidebar.unit"] as string}</Link>,
-		},
-		{
-			key: 4,
-			icon: <InsertRowBelowOutlined style={{ fontSize: 20 }} />,
-			label: (
-				<Link href={`/transaction`}>
-					{messages["sidebar.transaction"] as string}
-				</Link>
-			),
-		},
+		// {
+		// 	key: 3,
+		// 	icon: (
+		// 		<div>
+		// 			<MdOutlineWaterDrop size={10} /> /
+		// 			<FaBolt size={10} />
+		// 		</div>
+		// 	),
+		// 	label: <Link href={`/unit`}>{messages["sidebar.unit"] as string}</Link>,
+		// },
+		// {
+		// 	key: 4,
+		// 	icon: <MdOutlineReceiptLong size={20} />,
+		// 	label: (
+		// 		<Link href={`/transaction`}>
+		// 			{messages["sidebar.transaction"] as string}
+		// 		</Link>
+		// 	),
+		// },
 	];
 
 	const {
@@ -86,7 +94,12 @@ export default function LayoutSidebar({ selectKey, setSelectKey }: Props) {
 				height: "calc(100vh - 84px)",
 			}}
 		>
-			<Menu mode="inline" defaultSelectedKeys={selectKey} items={itemsMenu} />
+			<Menu
+				mode="inline"
+				// defaultSelectedKeys={selectKey}
+				selectedKeys={selectKey}
+				items={itemsMenu}
+			/>
 		</Sider>
 	);
 }

@@ -1,9 +1,20 @@
-export interface TParams {
+export interface UnitParams {
 	start: number;
-	page_size: number;
+	pageSize: number;
 	keywords: string;
-	month: string;
-	year: string;
+	customerId: string;
+	date: string;
 	zoneId: number;
 	type: "W" | "E";
 }
+
+export interface UpdateOrCreateUnit {
+	id: number;
+	date: string;
+	type: "W" | "E";
+	unitNumber: number;
+	customerId: string;
+	zoneId: number;
+}
+
+export interface UpdateOrCreateUnitList extends Array<UpdateOrCreateUnit> {}

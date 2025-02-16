@@ -1,19 +1,23 @@
-import { TMode, TParams } from "@/src/interfaces/customer.interface";
-import { getCustomerAll } from "@/src/store/slices/customerSlice";
-import { RootState, useAppDispatch } from "@/src/store/store";
+import { useGetCustomers } from "@/src/hooks/useCustomer";
+import {
+	CustomerData,
+	CustomerMode,
+	CustomerParams,
+} from "@/src/interfaces/customer.interface";
 import { formatPhoneNumber } from "@/src/utils/formatPhone";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Pagination, Table, TableColumnsType } from "antd";
+import { Pagination, Table } from "antd";
+import { ColumnsType } from "antd/es/table";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
+import { MdOutlineCheck } from "react-icons/md";
 
 type Props = {
-	params: TParams;
-	setParams: Dispatch<SetStateAction<TParams>>;
-	setIsMode: Dispatch<SetStateAction<TMode>>;
+	params: CustomerParams;
+	setParams: Dispatch<SetStateAction<CustomerParams>>;
+	setIsMode: Dispatch<SetStateAction<CustomerMode>>;
 	isFinish: boolean;
-	setCustomerId: Dispatch<SetStateAction<number | null>>;
+	setCustomerId: Dispatch<SetStateAction<string | null>>;
 	setIsOpenModalDetail: Dispatch<SetStateAction<boolean>>;
 	setIsOpenModalConfirm: Dispatch<SetStateAction<boolean>>;
 };
@@ -28,57 +32,89 @@ export default function TableCustomer({
 	setIsOpenModalConfirm,
 }: Props) {
 	const { messages } = useIntl();
-	const dispatch = useAppDispatch();
-	const { data: dataCustomer, isLoading: isLoadingCustomer } = useSelector(
-		(state: RootState) => state.customerSlice
-	);
-	// console.log("dataCustomer=>", dataCustomer, isLoadingCustomer);
+
+	const {
+		data: customerListData,
+		isLoading: isCustomerListLoading,
+		isFetching: isCustomerListFetching,
+		refetch: refetchCustomerList,
+	} = useGetCustomers(params);
 
 	useEffect(() => {
-		dispatch(getCustomerAll(params));
-	}, [params, isFinish, dispatch]);
+		refetchCustomerList();
+	}, [params, isFinish]);
 
-	const columns: TableColumnsType = [
+	const columns: ColumnsType<CustomerData> = [
 		{
 			title: "ลำดับ",
 			align: "center",
-			width: 80,
+			width: 40,
 			render: (_, record) => {
 				return <div className="text-center">{record.no}</div>;
 			},
 		},
 		{
-			title: "คำนาม",
+			title: "เขต",
 			align: "center",
 			width: 100,
 			render: (_, record) => {
-				return <div className="text-left">{record?.prefix?.prefix_name}</div>;
+				return (
+					<div>
+						{!!record.zone ? (
+							<div className="text-left">{record?.zone?.zoneName}</div>
+						) : (
+							<div className="text-left">-</div>
+						)}
+					</div>
+				);
 			},
 		},
 		{
-			title: "ชื่อ",
+			title: "ชื่อ - สกุล",
 			align: "center",
-			width: 150,
+			width: 140,
 			render: (_, record) => {
-				return <div className="text-left">{record.firstname}</div>;
+				return (
+					<div className="text-left">
+						{`${record?.prefix.prefixName ? record?.prefix.prefixName : ""} ${
+							record?.firstName ? record?.firstName : ""
+						}  ${record?.lastName ? record?.lastName : ""}`}
+					</div>
+				);
 			},
 		},
+		// {
+		// 	title: "คำนาม",
+		// 	align: "center",
+		// 	width: 60,
+		// 	render: (_, record) => {
+		// 		return <div className="text-left">{record?.prefix?.prefixName}</div>;
+		// 	},
+		// },
+		// {
+		// 	title: "ชื่อ",
+		// 	align: "center",
+		// 	width: 150,
+		// 	render: (_, record) => {
+		// 		return <div className="text-left">{record.firstName}</div>;
+		// 	},
+		// },
+		// {
+		// 	title: "นามสกุล",
+		// 	align: "center",
+		// 	width: 150,
+		// 	render: (_, record) => {
+		// 		return <div className="text-left">{record.lastName}</div>;
+		// 	},
+		// },
 		{
-			title: "นามสกุล",
+			title: "ประจำตัวประชาชน",
 			align: "center",
-			width: 150,
-			render: (_, record) => {
-				return <div className="text-left">{record.lastname}</div>;
-			},
-		},
-		{
-			title: "รหัสประจำตัวประชาชน",
-			align: "center",
-			width: 200,
+			width: 140,
 			render: (_, record) => {
 				return (
 					<div className="text-center">
-						{!!record.card_id ? record.card_id : "-"}
+						{record.cardId ? record.cardId : "-"}
 					</div>
 				);
 			},
@@ -86,11 +122,11 @@ export default function TableCustomer({
 		{
 			title: "เบอร์โทร",
 			align: "center",
-			width: 150,
+			width: 100,
 			render: (_, record) => {
 				return (
 					<div className="text-center">
-						{!!record.phone ? formatPhoneNumber(record.phone) : "-"}
+						{record.phoneNumber ? formatPhoneNumber(record.phoneNumber) : "-"}
 					</div>
 				);
 			},
@@ -98,11 +134,11 @@ export default function TableCustomer({
 		{
 			title: "เลขที่บ้าน",
 			align: "center",
-			width: 140,
+			width: 60,
 			render: (_, record) => {
 				return (
 					<div className="text-center">
-						{!!record.house_number ? record.house_number : "-"}
+						{!!record.houseNumber ? record.houseNumber : "-"}
 					</div>
 				);
 			},
@@ -110,7 +146,7 @@ export default function TableCustomer({
 		{
 			title: "ที่อยู่",
 			align: "center",
-			width: 200,
+			width: 140,
 			render: (_, record) => {
 				return (
 					<div>
@@ -124,30 +160,52 @@ export default function TableCustomer({
 			},
 		},
 		{
-			title: "เขต",
+			title: "บริการน้ำ",
 			align: "center",
-			width: 200,
+			width: 60,
 			render: (_, record) => {
 				return (
-					<div>
-						{!!record.zone ? (
-							<div className="text-left">{record?.zone?.zone_name}</div>
+					<div className="text-center">
+						{record.isServiceWater ? (
+							<div>
+								<MdOutlineCheck size={20} />
+							</div>
 						) : (
-							<div className="text-center">-</div>
+							<></>
 						)}
 					</div>
 				);
 			},
 		},
 		{
+			title: "บริการไฟฟ้า",
+			align: "center",
+			width: 60,
+			render: (_, record) => {
+				return (
+					<div className="text-center">
+						{record.isServiceElectric ? (
+							<div>
+								<MdOutlineCheck size={20} />
+							</div>
+						) : (
+							<></>
+						)}
+					</div>
+				);
+			},
+		},
+
+		{
 			title: "จัดการ",
 			align: "center",
-			width: 80,
+			width: 60,
+			fixed: "right",
 			render: (_, record) => {
 				return (
 					<div className="flex items-center justify-center gap-2">
 						<EditOutlined
-							style={{ fontSize: 20 }}
+							style={{ fontSize: 16 }}
 							onClick={() => {
 								setIsMode("edit");
 								setIsOpenModalDetail(true);
@@ -155,7 +213,7 @@ export default function TableCustomer({
 							}}
 						/>
 						<DeleteOutlined
-							style={{ fontSize: 20 }}
+							style={{ fontSize: 16 }}
 							onClick={() => {
 								setIsMode("delete");
 								setIsOpenModalConfirm(true);
@@ -170,15 +228,16 @@ export default function TableCustomer({
 	return (
 		<div>
 			<Table
-				rowKey={(record) => `${record.no}`}
+				size="middle"
+				rowKey={(record) => `${record.id}`}
 				columns={columns}
 				dataSource={
-					dataCustomer?.result?.map((item: any, index: number) => ({
+					customerListData?.data?.map((item, index) => ({
 						...item,
-						no: (params.start - 1) * params.page_size + (index + 1),
+						idx: (params.start - 1) * params.pageSize + (index + 1),
 					})) ?? []
 				}
-				loading={isLoadingCustomer}
+				loading={isCustomerListLoading || isCustomerListFetching}
 				pagination={false}
 				scroll={{
 					x: 1400,
@@ -189,7 +248,7 @@ export default function TableCustomer({
 				<Pagination
 					showSizeChanger
 					current={params.start}
-					total={dataCustomer?.total_record}
+					total={customerListData?.total_record}
 					showTotal={(total) =>
 						`${messages["pagination.total"] as string} ${total} ${
 							messages["pagination.item"] as string
@@ -199,7 +258,7 @@ export default function TableCustomer({
 						setParams((prev) => ({
 							...prev,
 							start: page,
-							page_size: pageSize,
+							pageSize: pageSize,
 						}));
 					}}
 					responsive

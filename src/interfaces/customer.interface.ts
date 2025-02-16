@@ -1,19 +1,56 @@
-export type TActionValues = {
-	id?: number;
-	firstname: string;
-	lastname?: string;
-	card_id: string;
-	phone?: string;
-	house_number?: string;
+export type CreateCustomer = {
+	no: number;
+	prefixId: number;
+	firstName: string;
+	lastName: string;
+	cardId: string;
+	phoneNumber: string;
+	houseNumber: string;
 	address: string;
-	zoneId: number | null;
-	prefixId: number | null;
+	zoneId: number;
+	isServiceWater: boolean;
+	isServiceElectric: boolean;
+	isActive: boolean;
 };
 
-export type TParams = {
+export interface UpdateCustomer extends CreateCustomer {
+	id: string;
+}
+
+export type CustomerParams = {
 	start: number;
-	page_size: number;
+	pageSize: number;
 	keywords?: string;
+	zoneId: number;
 };
 
-export type TMode = "create" | "edit" | "delete" | null;
+export interface CustomerData {
+	idx?: number;
+	no: number;
+	id: string;
+	firstName: string;
+	lastName: string;
+	cardId: string;
+	phoneNumber: string;
+	houseNumber: string;
+	address: string;
+	isActive: boolean;
+	isServiceWater: boolean;
+	isServiceElectric: boolean;
+	zone: {
+		id: number;
+		zoneName: string;
+	};
+	prefix: {
+		id: number;
+		prefixName: string;
+	};
+}
+
+export interface CustomerFetchResponse {
+	message: string;
+	total_record: number;
+	data: CustomerData[];
+}
+
+export type CustomerMode = "create" | "edit" | "delete" | null;

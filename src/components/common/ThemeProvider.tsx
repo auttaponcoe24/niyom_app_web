@@ -32,12 +32,12 @@ export default function ThemeProvider({ children }: Props) {
 			// borderRadius: 8, // กำหนดค่า border radius เดียวกันสำหรับทั้งสองโหมด
 		},
 		algorithm:
+			// isDarkMode === true
+			// 	? [darkAlgorithm, compactAlgorithm]
+			// 	: [defaultAlgorithm, compactAlgorithm],
 			isDarkMode === true
-				? [darkAlgorithm, compactAlgorithm]
-				: [defaultAlgorithm, compactAlgorithm],
-		// isDarkMode === true
-		// 	? [darkAlgorithm] // Dark mode
-		// 	: [defaultAlgorithm], // Light mode
+				? [darkAlgorithm] // Dark mode
+				: [defaultAlgorithm], // Light mode
 	};
 	return <ConfigProvider theme={themeConfig}>{children}</ConfigProvider>;
 }

@@ -1,12 +1,9 @@
-import { TMode } from "@/src/interfaces/zone.interface";
 import {
-	createZone,
-	getById,
-	getZoneAll,
-	IZoneAction,
-	updateZone,
-} from "@/src/store/slices/zoneSlice";
-import { RootState, useAppDispatch } from "@/src/store/store";
+	useCreateZone,
+	useGetZoneById,
+	useUpdateZone,
+} from "@/src/hooks/useZone";
+import { CreateZone, TMode, UpdateZone } from "@/src/interfaces/zone.interface";
 import { Button, Divider, Form, Input, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { useIntl } from "react-intl";
@@ -23,6 +20,10 @@ type Props = {
 	setIsFinish: Dispatch<SetStateAction<boolean>>;
 };
 
+interface ZoneForm {
+	zone_name: string;
+}
+
 export default function ModalDetail({
 	isOpenModal,
 	setIsOpenModal,
@@ -34,33 +35,35 @@ export default function ModalDetail({
 	setIsFinish,
 }: Props) {
 	const { messages } = useIntl();
-	const dispatch = useAppDispatch();
+	const [form] = Form.useForm<ZoneForm>();
 
 	const {
-		isLoading: isLoadingZone,
-		dataById: dataByIdZone,
-		isLoadingById: isLoadingByIdZone,
-		isFetchingUpdateZone,
-	} = useSelector((state: RootState) => state.zoneSlice);
-	// console.log("dataZone=>", dataByIdZone);
+		data: zoneIdData,
+		isLoading: isLoadingZoneId,
+		isFetching: isFetchingZoneId,
+		refetch: refetchZoneId,
+	} = useGetZoneById(zoneId as number);
 
-	const [form] = Form.useForm();
+	const { mutate: createZone, isPending: isPendingCreateZone } =
+		useCreateZone();
+	const { mutate: updateZone, isPending: isPendingUpdateZone } =
+		useUpdateZone();
 
 	useEffect(() => {
 		if (isMode === "create") {
 		} else if (isMode === "edit" && zoneId) {
-			dispatch(getById({ id: zoneId }));
+			refetchZoneId();
 		}
-	}, [isMode, zoneId, dispatch]);
+	}, [isMode, zoneId]);
 
 	useEffect(() => {
-		if (isMode === "edit" && dataByIdZone) {
+		if (isMode === "edit" && zoneIdData) {
 			form.setFieldsValue({
-				zone_name: dataByIdZone.result.zone_name,
+				zone_name: zoneIdData.data.zoneName,
 			});
 		} else {
 		}
-	}, [form, dataByIdZone, isMode]);
+	}, [form, zoneIdData, isMode]);
 
 	const handleOnClose = () => {
 		setIsOpenModal(false);
@@ -68,34 +71,18 @@ export default function ModalDetail({
 		setIsMode(null);
 	};
 
-	const handleOnSubmit = async (values: IZoneAction) => {
-		if (isMode === "create") {
-			const result = await dispatch(createZone(values));
-			// console.log("result=>", result);
+	const handleOnSubmit = async (values: ZoneForm) => {
+		const create: CreateZone = {
+			zoneName: values.zone_name,
+		};
 
-			if (createZone.fulfilled.match(result)) {
-				if (!!result.payload) {
-					notification.success({
-						message: messages["notification.api.resp.success"] as string,
-					});
-					setIsOpenModal(false);
-					setIsFinish(!isFinish);
-				} else {
-					notification.error({
-						message: messages["notification.api.resp.error"] as string,
-					});
-				}
-			} else {
-				notification.error({
-					message: messages["notification.api.resp.error"] as string,
-				});
-			}
-		} else if (isMode === "edit") {
-			const result = await dispatch(
-				updateZone({ ...values, id: dataByIdZone.result.id })
-			);
-			console.log(result);
-			if (result.meta.requestStatus === "fulfilled") {
+		const update: UpdateZone = {
+			id: zoneIdData?.data?.id,
+			zoneName: values.zone_name,
+		};
+
+		const onSuccess = (success: any) => {
+			if (success) {
 				notification.success({
 					message: messages["notification.api.resp.success"] as string,
 				});
@@ -106,6 +93,17 @@ export default function ModalDetail({
 					message: messages["notification.api.resp.error"] as string,
 				});
 			}
+		};
+
+		const onError = () => {
+			notification.error({
+				message: messages["notification.api.resp.error"] as string,
+			});
+		};
+		if (isMode === "create") {
+			createZone(create, { onSuccess, onError });
+		} else if (isMode === "edit") {
+			updateZone(update, { onSuccess, onError });
 		}
 	};
 
@@ -118,7 +116,7 @@ export default function ModalDetail({
 			centered
 			destroyOnClose
 		>
-			{isLoadingZone || isLoadingByIdZone || isFetchingUpdateZone ? (
+			{isLoadingZoneId || isFetchingZoneId ? (
 				<div
 					style={{
 						display: "flex",
@@ -139,7 +137,11 @@ export default function ModalDetail({
 							<Button htmlType="reset" type="default">
 								{messages["text.reset"] as string}
 							</Button>
-							<Button htmlType="submit" type="primary">
+							<Button
+								htmlType="submit"
+								type="primary"
+								loading={isPendingCreateZone || isPendingUpdateZone}
+							>
 								{messages["text.save"] as string}
 							</Button>
 						</div>

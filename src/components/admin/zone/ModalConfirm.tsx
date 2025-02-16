@@ -1,4 +1,4 @@
-import { deleteZone } from "@/src/store/slices/zoneSlice";
+import { useDeleteZone } from "@/src/hooks/useZone";
 import { RootState, useAppDispatch } from "@/src/store/store";
 import { Button, Divider, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction } from "react";
@@ -24,39 +24,47 @@ export default function ModalConfirm({
 	setIsFinish,
 }: Props) {
 	const { messages } = useIntl();
-	const { isFetchingDeleteZone } = useSelector(
-		(state: RootState) => state.zoneSlice
-	);
 
-	const dispatch = useAppDispatch();
+	const { mutate: deleteZone, isPending: isPendingDeleteZone } =
+		useDeleteZone();
+
 	const handleOnClose = () => {
 		setIsOpenModalComfirm(false);
 		setZoneId(null);
 	};
 
 	const handleOnConfirm = async () => {
-		const res = await dispatch(deleteZone(Number(zoneId)));
-		if (res.meta.requestStatus === "rejected") {
-			notification.error({
-				message: messages["notification.api.resp.error"] as string,
-			});
-		} else {
-			notification.success({
-				message: messages["notification.api.resp.success"] as string,
-			});
-			setIsOpenModalComfirm(false);
-			setIsFinish(!isFinish);
-		}
+		deleteZone(Number(zoneId), {
+			onSuccess: (success) => {
+				if (success) {
+					notification.success({
+						message: messages["notification.api.resp.success"] as string,
+					});
+					setIsOpenModalComfirm(false);
+					setIsFinish(!isFinish);
+				} else {
+					notification.error({
+						message: messages["notification.api.resp.error"] as string,
+					});
+				}
+			},
+			onError: (error) => {
+				notification.error({
+					message: messages["notification.api.resp.error"] as string,
+				});
+			},
+		});
 	};
 
 	return (
 		<Modal
 			open={isOpenModalComfirm}
 			onCancel={handleOnClose}
+			centered
 			title={`ลบ`}
 			footer={null}
 		>
-			{isFetchingDeleteZone ? (
+			{isPendingDeleteZone ? (
 				<div
 					style={{
 						display: "flex",

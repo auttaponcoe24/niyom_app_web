@@ -1,4 +1,4 @@
-import Transaction from "@/src/components/admin/transaction";
+import TransactionComponent from "@/src/components/admin/transaction";
 import { Breadcrumb } from "antd";
 import Link from "next/link";
 import React from "react";
@@ -24,7 +24,7 @@ export default function TransactionPage({}: Props) {
 			</header>
 
 			<div>
-				<Transaction />
+				<TransactionComponent />
 			</div>
 		</section>
 	);

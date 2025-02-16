@@ -1,27 +1,54 @@
-import { TActionValues, TMode } from "@/src/interfaces/customer.interface";
 import {
-	createCustomer,
-	getCustomerId,
-	updateCustomer,
-} from "@/src/store/slices/customerSlice";
-import { getPrefix } from "@/src/store/slices/prefixSlice";
-import { getZoneAll } from "@/src/store/slices/zoneSlice";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { Button, Form, Input, Modal, notification, Select, Spin } from "antd";
+	useCreateCustomer,
+	useGetCustomerId,
+	useUpdateCustomer,
+} from "@/src/hooks/useCustomer";
+import { useGetPrefixList } from "@/src/hooks/usePrefix";
+import { useGetZone } from "@/src/hooks/useZone";
+import {
+	CreateCustomer,
+	CustomerMode,
+	UpdateCustomer,
+} from "@/src/interfaces/customer.interface";
+import {
+	Button,
+	Checkbox,
+	Divider,
+	Form,
+	Input,
+	Modal,
+	notification,
+	Select,
+	Spin,
+} from "antd";
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
 
 type Props = {
 	isModalOpen: boolean;
 	setIsModalOpen: Dispatch<SetStateAction<boolean>>;
-	isMode: TMode | null;
-	setIsMode: Dispatch<SetStateAction<TMode | null>>;
-	customerId: number | null;
-	setCustomerId: React.Dispatch<React.SetStateAction<number | null>>;
+	isMode: CustomerMode;
+	setIsMode: Dispatch<SetStateAction<CustomerMode>>;
+	customerId: string | null;
+	setCustomerId: React.Dispatch<React.SetStateAction<string | null>>;
 	isFinish: boolean;
 	setIsFinish: Dispatch<SetStateAction<boolean>>;
 };
+
+interface CustomerForm {
+	no: number;
+	prefixId: number;
+	firstName: string;
+	lastName: string;
+	cardId: string;
+	phoneNumber: string;
+	houseNumber: string;
+	address: string;
+	zoneId: number;
+	isServiceWater: boolean;
+	isServiceElectric: boolean;
+	isActive: boolean;
+}
 
 export default function ModalDetail({
 	isModalOpen,
@@ -34,68 +61,80 @@ export default function ModalDetail({
 	setCustomerId,
 }: Props) {
 	const { messages } = useIntl();
-	const dispatch = useAppDispatch();
-	const { data: dataZone, isLoading: isLoadingZone } = useSelector(
-		(state: RootState) => state.zoneSlice
-	);
-	const [form] = Form.useForm();
+	const [form] = Form.useForm<CustomerForm>();
 
 	const {
-		dataById: dataCustomerId,
-		isLoadingById: isLoadingCustomerId,
-		isLoadingCreate,
-		isLoadingUpdate,
-	} = useSelector((state: RootState) => state.customerSlice);
+		data: customerIdData,
+		isLoading: isCustomerIdLoading,
+		isFetching: isCustomerIdFetching,
+		refetch: refetchCustomerId,
+	} = useGetCustomerId(customerId as string);
 
-	const { data: dataPrefix, isLoading: isLoadingPrefix } = useSelector(
-		(state: RootState) => state.prefixSlice
-	);
+	const {
+		data: prefixListData,
+		isLoading: isPrefixListLoading,
+		isFetching: isPrefixListFetching,
+		refetch: refetchPrefixList,
+	} = useGetPrefixList({
+		keywords: "",
+		pageSize: 999,
+		start: 1,
+	});
 
-	// console.log("dataCustomerId=>", dataCustomerId);
+	const {
+		data: zoneListData,
+		isLoading: isZoneListLoading,
+		isFetching: isZoneListFetching,
+		refetch: refetchZoneList,
+	} = useGetZone({
+		pageSize: 999,
+		start: 1,
+		keywords: "",
+	});
 
-	const initialForm: TActionValues = useMemo(
-		() => ({
-			card_id: "",
-			firstname: "",
-			lastname: "",
-			address: "",
-			house_number: "",
-			phone: "",
-			zoneId: null,
-			prefixId: null,
-		}),
-		[]
-	);
+	const { mutate: createCustomer, isPending: isCreateCustomerPending } =
+		useCreateCustomer();
+
+	const { mutate: updateCustomer, isPending: isUpdateCustomerPending } =
+		useUpdateCustomer();
 
 	useEffect(() => {
-		dispatch(getZoneAll({ start: 1, page_size: 999, keywords: "" }));
-		dispatch(getPrefix());
-	}, [dispatch]);
-
-	useEffect(() => {
-		if (isMode === "create") {
-		} else if (isMode === "edit" && customerId) {
-			dispatch(getCustomerId(customerId));
+		if (isModalOpen && customerId && isMode === "edit") {
+			refetchCustomerId();
+			refetchPrefixList();
+			refetchZoneList();
 		}
-	}, [dispatch, isMode, customerId]);
+	}, [isModalOpen, customerId, isMode]);
 
 	useEffect(() => {
-		if (isMode === "edit" && dataCustomerId) {
+		if (!form) return; // ป้องกันการเรียก `setFieldsValue` ก่อนที่ `form` จะพร้อม
+
+		const defaultValues = {
+			no: undefined,
+			prefixId: undefined,
+			firstName: "",
+			lastName: "",
+			cardId: "",
+			phoneNumber: "",
+			houseNumber: "",
+			address: "",
+			zoneId: undefined,
+			isServiceWater: undefined,
+			isServiceElectric: undefined,
+			isActive: true,
+		};
+
+		if (customerIdData && isMode === "edit") {
 			form.setFieldsValue({
-				id: dataCustomerId?.result?.id,
-				firstname: dataCustomerId?.result?.firstname,
-				lastname: dataCustomerId?.result?.lastname,
-				card_id: dataCustomerId?.result?.card_id,
-				phone: dataCustomerId?.result?.phone,
-				house_number: dataCustomerId?.result?.house_number,
-				address: dataCustomerId?.result?.address,
-				zoneId: dataCustomerId?.result?.zoneId,
-				prefixId: dataCustomerId?.result?.prefixId,
+				...defaultValues, // ตั้งค่าเริ่มต้น
+				...customerIdData.data, // นำข้อมูลจาก API มาเติม
+				prefixId: customerIdData.data.prefix?.id ?? undefined,
+				zoneId: customerIdData.data.zone?.id ?? undefined,
 			});
 		} else {
-			form.setFieldsValue(initialForm);
+			form.setFieldsValue(defaultValues);
 		}
-	}, [form, initialForm, dataCustomerId, isMode]);
+	}, [form, isModalOpen, isMode, customerIdData]);
 
 	const handleOnClose = () => {
 		setIsModalOpen(false);
@@ -103,50 +142,49 @@ export default function ModalDetail({
 		setIsMode(null);
 	};
 
-	const onSubmit = async (values: TActionValues) => {
-		if (isMode === "create") {
-			const result = await dispatch(createCustomer(values));
-			// console.log("result=>", result);
-			if (result.meta.requestStatus === "fulfilled") {
-				if (!!result.payload) {
-					notification.success({
-						message: messages["notification.api.resp.success"] as string,
-					});
-					setIsModalOpen(false);
-					setIsFinish(!isFinish);
-				} else {
-					notification.error({
-						message: messages["notification.api.resp.error"] as string,
-					});
-				}
+	const onSubmit = async (values: CustomerForm) => {
+		const onSuccess = (success: any) => {
+			if (success) {
+				notification.success({
+					message: messages["notification.api.resp.success"] as string,
+				});
+				setIsModalOpen(false);
+				setIsFinish(!isFinish);
 			} else {
 				notification.error({
 					message: messages["notification.api.resp.error"] as string,
 				});
 			}
-		} else if (isMode === "edit") {
-			// console.log("values=>", values);
+		};
+		const onError = (error: any) => {
+			notification.error({
+				message: messages["notification.api.resp.error"] as string,
+			});
+		};
+		const create: CreateCustomer = {
+			no: +values.no,
+			prefixId: +values.prefixId,
+			firstName: values.firstName,
+			lastName: values.lastName,
+			cardId: values.cardId,
+			phoneNumber: values.phoneNumber,
+			houseNumber: values.houseNumber,
+			address: values.address,
+			zoneId: +values.zoneId,
+			isServiceWater: values.isServiceWater,
+			isServiceElectric: values.isServiceElectric,
+			isActive: values.isActive,
+		};
 
-			const result = await dispatch(
-				updateCustomer({ ...values, id: dataCustomerId?.result?.id })
-			);
-			if (result.meta.requestStatus === "fulfilled") {
-				if (!!result.payload) {
-					notification.success({
-						message: messages["notification.api.resp.success"] as string,
-					});
-					setIsModalOpen(false);
-					setIsFinish(!isFinish);
-				} else {
-					notification.error({
-						message: messages["notification.api.resp.error"] as string,
-					});
-				}
-			} else {
-				notification.error({
-					message: messages["notification.api.resp.error"] as string,
-				});
-			}
+		if (customerIdData && isMode === "edit") {
+			const update: UpdateCustomer = {
+				...create,
+				id: customerIdData?.data.id,
+			};
+
+			updateCustomer(update, { onSuccess, onError });
+		} else if (isMode === "create") {
+			createCustomer(create, { onSuccess, onError });
 		}
 	};
 
@@ -157,8 +195,9 @@ export default function ModalDetail({
 			title={isMode === "create" ? "สร้างลูกค้า" : "แก้ไขลูกค้า"}
 			footer={null}
 			destroyOnClose
+			width={800}
 		>
-			{false ? (
+			{isCustomerIdLoading || isCustomerIdFetching ? (
 				<div
 					style={{
 						display: "flex",
@@ -171,142 +210,264 @@ export default function ModalDetail({
 				</div>
 			) : (
 				<Form form={form} onFinish={onSubmit} layout="vertical">
-					<Form.Item name={`prefixId`} label="คำนาม" required>
-						<Select
-							loading={isLoadingPrefix}
-							options={dataPrefix?.result?.map((item: any, index: number) => ({
-								key: index,
-								label: item.prefix_name,
-								value: item.id,
-							}))}
-						/>
-					</Form.Item>
-					<Form.Item
-						label={`ชื่อ`}
-						name="firstname"
-						rules={[
-							{
-								required: true,
-								message: "กรุณากรอก",
-							},
-						]}
-					>
-						<Input />
-					</Form.Item>
-					<Form.Item
-						label={`นามสกุล`}
-						name="lastname"
-						rules={[
-							{
-								required: true,
-								message: "กรุณากรอก",
-							},
-						]}
-					>
-						<Input />
-					</Form.Item>
-					<Form.Item
-						label={`รหัสบัตรประจำตัวประชาชน`}
-						name="card_id"
-						rules={[
-							{
-								required: true,
-								message: "กรุณากรอก",
-							},
-							{
-								validator: (_, value) => {
-									const idCardPattern = /^\d{13}$/;
-									if (!value) {
-										return Promise.reject("กรุณากรอกรหัสประจำตัวประชาชน");
-									} else if (!idCardPattern.test(value)) {
-										return Promise.reject(
-											"ระบุไม่ถูกต้อง ต้องเป็นตัวเลข 13 หลัก"
-										);
-									}
-									return Promise.resolve();
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+						<Form.Item
+							label={`เขต`}
+							name="zoneId"
+							rules={[
+								{
+									required: true,
+									message: "กรุณาเลือกเขต",
 								},
-							},
-						]}
-					>
-						<Input maxLength={13} showCount />
-					</Form.Item>
-					<Form.Item
-						label={`เบอร์โทร`}
-						name="phone"
-						rules={[
-							{
-								required: true,
-								message: "กรุณากรอก",
-							},
-							{
-								validator: (_, value) => {
-									const phonePattern = /^\d{10}$/;
-									if (!value) {
-										return Promise.reject("กรุณากรอกเบอร์โทรศัพท์");
-									} else if (!phonePattern.test(value)) {
-										return Promise.reject(
-											"ระบุไม่ถูกต้อง ต้องเป็นตัวเลข 10 หลัก"
-										);
-									}
-									return Promise.resolve();
+							]}
+						>
+							<Select
+								options={zoneListData?.data?.map((item, index) => ({
+									key: index,
+									label: item.zoneName,
+									value: item.id,
+								}))}
+								loading={isZoneListLoading || isZoneListFetching}
+							/>
+						</Form.Item>
+						<Form.Item name={`no`} label="ลำดับ" required>
+							<Input type="number" />
+						</Form.Item>
+						<Form.Item name={`prefixId`} label="คำนาม" required>
+							<Select
+								loading={isPrefixListLoading || isPrefixListFetching}
+								options={prefixListData?.data?.map((item, index) => ({
+									key: index,
+									label: item.prefixName,
+									value: item.id,
+								}))}
+							/>
+						</Form.Item>
+
+						<Form.Item
+							label={`ชื่อ`}
+							name="firstName"
+							rules={[
+								{
+									required: true,
+									message: "กรุณากรอก",
 								},
-							},
-						]}
-					>
-						<Input maxLength={10} showCount />
-					</Form.Item>
-					<Form.Item
-						label={`บ้านเลขที่`}
-						name="house_number"
-						rules={[
-							{
-								required: false,
-								message: "กรุณากรอก",
-							},
-						]}
-					>
-						<Input />
-					</Form.Item>
-					<Form.Item
-						label={`ที่อยู่`}
-						name="address"
-						rules={[
-							{
-								required: false,
-								message: "กรุณากรอก",
-							},
-						]}
-					>
-						<Input />
-					</Form.Item>
-					<Form.Item
-						label={`ชื่อเขต`}
-						name="zoneId"
-						rules={[
-							{
-								required: true,
-								message: "กรุณาเลือกเขต",
-							},
-						]}
-					>
-						<Select
-							options={dataZone?.result?.map((item: any, index: number) => ({
-								key: index,
-								label: item.zone_name,
-								value: item.id,
-							}))}
-						/>
-					</Form.Item>
-					<Form.Item>
+							]}
+						>
+							<Input />
+						</Form.Item>
+						<Form.Item
+							label={`นามสกุล`}
+							name="lastName"
+							rules={[
+								{
+									required: true,
+									message: "กรุณากรอก",
+								},
+							]}
+						>
+							<Input />
+						</Form.Item>
+						<Form.Item
+							label={`ประจำตัวประชาชน`}
+							name="cardId"
+							rules={[
+								{
+									required: false,
+									message: "กรุณากรอก",
+								},
+								// {
+								// 	validator: (_, value) => {
+								// 		const idCardPattern = /^\d{13}$/;
+								// 		if (!value) {
+								// 			return Promise.reject("กรุณากรอกรหัสประจำตัวประชาชน");
+								// 		} else if (!idCardPattern.test(value)) {
+								// 			return Promise.reject(
+								// 				"ระบุไม่ถูกต้อง ต้องเป็นตัวเลข 13 หลัก"
+								// 			);
+								// 		}
+								// 		return Promise.resolve();
+								// 	},
+								// },
+							]}
+						>
+							<Input maxLength={13} showCount />
+						</Form.Item>
+						<Form.Item
+							label={`เบอร์โทร`}
+							name="phoneNumber"
+							rules={[
+								{
+									required: false,
+									message: "กรุณากรอก",
+								},
+								// {
+								// 	validator: (_, value) => {
+								// 		const phonePattern = /^\d{10}$/;
+								// 		if (!value) {
+								// 			return Promise.reject("กรุณากรอกเบอร์โทรศัพท์");
+								// 		} else if (!phonePattern.test(value)) {
+								// 			return Promise.reject(
+								// 				"ระบุไม่ถูกต้อง ต้องเป็นตัวเลข 10 หลัก"
+								// 			);
+								// 		}
+								// 		return Promise.resolve();
+								// 	},
+								// },
+							]}
+						>
+							<Input maxLength={10} showCount />
+						</Form.Item>
+						<Form.Item
+							label={`บ้านเลขที่`}
+							name="houseNumber"
+							rules={[
+								{
+									required: false,
+									message: "กรุณากรอก",
+								},
+							]}
+						>
+							<Input />
+						</Form.Item>
+						<Form.Item
+							label={`ที่อยู่`}
+							name="address"
+							rules={[
+								{
+									required: false,
+									message: "กรุณากรอก",
+								},
+							]}
+						>
+							<Input />
+						</Form.Item>
+
+						<Form.Item
+							label="บริการน้ำ"
+							name={`isServiceWater`}
+							// valuePropName="checked"
+							rules={[
+								{
+									required: true,
+									message: "กรุณาเลือก",
+								},
+							]}
+						>
+							<Select
+								options={[
+									{
+										key: 1,
+										label: "ใช้บริการ",
+										value: true,
+									},
+									{
+										key: 2,
+										label: "ไม่ใช้บริการ",
+										value: false,
+									},
+								].map((item) => ({
+									key: item.key,
+									label: (
+										<div
+											className={item.value ? `text-green-600` : `text-red-600`}
+										>
+											{item.label}
+										</div>
+									),
+									value: item.value,
+								}))}
+							/>
+						</Form.Item>
+						<Form.Item
+							label="บริการไฟฟ้า"
+							name={`isServiceElectric`}
+							// valuePropName="checked"
+							rules={[
+								{
+									required: true,
+									message: "กรุณาเลือก",
+								},
+							]}
+						>
+							<Select
+								options={[
+									{
+										key: 1,
+										label: "ใช้บริการ",
+										value: true,
+									},
+									{
+										key: 2,
+										label: "ไม่ใช้บริการ",
+										value: false,
+									},
+								].map((item) => ({
+									key: item.key,
+									label: (
+										<div
+											className={item.value ? `text-green-600` : `text-red-600`}
+										>
+											{item.label}
+										</div>
+									),
+									value: item.value,
+								}))}
+							/>
+						</Form.Item>
+
+						<Form.Item
+							label="ลูกค้า"
+							name={`isActive`}
+							rules={[
+								{
+									required: true,
+									message: "กรุณาเลือก",
+								},
+							]}
+						>
+							<Select
+								options={[
+									{
+										key: 1,
+										label: "ยังใช้บริการ",
+										value: true,
+									},
+									{
+										key: 2,
+										label: "ยกเลิกบริการ",
+										value: false,
+									},
+								].map((item) => ({
+									key: item.key,
+									label: (
+										<div
+											className={item.value ? `text-green-600` : `text-red-600`}
+										>
+											{item.label}
+										</div>
+									),
+									value: item.value,
+								}))}
+							/>
+						</Form.Item>
+					</div>
+					<Divider />
+					<div>
 						<div className="flex items-center justify-end gap-2 mt-2">
-							<Button htmlType="reset" type="default">
+							<Button className="w-[100px]" htmlType="reset" type="default">
 								{messages["text.reset"] as string}
 							</Button>
-							<Button htmlType="submit" type="primary">
+							<Button
+								loading={isCreateCustomerPending || isUpdateCustomerPending}
+								className="w-[100px]"
+								htmlType="submit"
+								type="primary"
+							>
 								{messages["text.save"] as string}
 							</Button>
 						</div>
-					</Form.Item>
+					</div>
 				</Form>
 			)}
 		</Modal>

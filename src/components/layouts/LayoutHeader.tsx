@@ -1,7 +1,5 @@
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { signOut } from "@/src/store/slices/userSlice";
 import {
 	useLanguage,
 	useSwitchMode,
@@ -13,6 +11,7 @@ import {
 	Dropdown,
 	Layout,
 	MenuProps,
+	notification,
 	Select,
 	Space,
 	theme,
@@ -28,10 +27,12 @@ import {
 	UserOutlined,
 } from "@ant-design/icons";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
 import { Dispatch, SetStateAction, useState } from "react";
 import { HiOutlineBars3 } from "react-icons/hi2";
 import Link from "next/link";
+import { useSession, useSignOut } from "@/src/hooks/useAuth";
+import { SIGN_OUT } from "@/src/services/auth.api";
+import Image from "next/image";
 
 const { Header } = Layout;
 
@@ -41,8 +42,6 @@ type Props = {
 
 export default function LayoutHeader({ setSelectKey }: Props) {
 	const router = useRouter();
-	const dispatch = useAppDispatch();
-	const { username } = useSelector((state: RootState) => state.userSlice);
 	const { messages } = useIntl();
 	const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false);
 	const { language, switchLanguage } = useLanguage();
@@ -51,18 +50,23 @@ export default function LayoutHeader({ setSelectKey }: Props) {
 		token: { colorTextBase, colorPrimary },
 	} = theme.useToken();
 
+	const {
+		data: dataSession,
+		isLoading: isLoadingSession,
+		isFetching: isFetchingSession,
+		refetch: refetchSession,
+	} = useSession();
+
 	const handleOnSignOut = async () => {
 		try {
-			const result = await dispatch(signOut());
-
-			if (result.meta.requestStatus === "fulfilled") {
-				if (!!result.payload) {
-					router.push("/login");
-				} else {
-					toast.error("ดำเนินการออกจากระบบไม่สำเร็จ");
-				}
-			} else {
-				toast.error("ดำเนินการออกจากระบบไม่สำเร็จ");
+			const res = await SIGN_OUT();
+			if (res) {
+				notification.success({
+					message: "Login Out",
+				});
+				localStorage.removeItem("user");
+				localStorage.removeItem("accessToken");
+				router.push("/login");
 			}
 		} catch (error) {
 			console.log(error);
@@ -111,11 +115,19 @@ export default function LayoutHeader({ setSelectKey }: Props) {
 					display: "flex",
 					alignItems: "center",
 					justifyContent: "space-between",
-					backgroundColor: colorPrimary,
-					color: "#FFFFFF",
+					backgroundColor: "#00435E",
+					// backgroundColor: colorPrimary,
 				}}
 			>
-				<div className="text-2xl hidden md:block">Logo</div>
+				<div className="text-2xl hidden md:block">
+					<Image
+						src={`/images/logo.svg`}
+						alt="logo"
+						width={40}
+						height={40}
+						priority // เพิ่ม priority เพื่อลดเวลาโหลด
+					/>
+				</div>
 				<Button
 					className="!text-white md:!hidden !bg-inherit"
 					type="text"
@@ -163,8 +175,12 @@ export default function LayoutHeader({ setSelectKey }: Props) {
 						<Dropdown menu={{ items: itemsMenu }} trigger={["click"]}>
 							<a onClick={(e) => e.preventDefault()}>
 								<Space className="text-white">
-									<div>{messages["text1"] as string}</div>
-									<div>{username}</div>
+									{dataSession ? (
+										<div>{dataSession?.data?.firstName}</div>
+									) : (
+										<div>{messages["text1"] as string}</div>
+									)}
+
 									<DownOutlined />
 								</Space>
 							</a>

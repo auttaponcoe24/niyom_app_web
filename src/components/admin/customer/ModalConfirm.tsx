@@ -1,15 +1,12 @@
-import { deleteCustomer } from "@/src/store/slices/customerSlice";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { Button, Modal, Spin } from "antd";
+import { useDeleteCustomer } from "@/src/hooks/useCustomer";
+import { Button, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction } from "react";
-import toast from "react-hot-toast";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
 
 type Props = {
 	isOpenModal: boolean;
 	setIsOpenModal: Dispatch<SetStateAction<boolean>>;
-	customerId: number | null;
+	customerId: string | null;
 	isFinish: boolean;
 	setIsFinish: Dispatch<SetStateAction<boolean>>;
 };
@@ -22,23 +19,31 @@ export default function ModalConfirm({
 	setIsFinish,
 }: Props) {
 	const { messages } = useIntl();
-	const dispatch = useAppDispatch();
-	const { isLoadingDelete } = useSelector(
-		(state: RootState) => state.customerSlice
-	);
+
+	const { mutate: deleteCustomer, isPending: isPendingDeleteCusotmer } =
+		useDeleteCustomer();
+
 	const handleOnConfirm = async () => {
-		const result = await dispatch(deleteCustomer(customerId as number));
-		if (result.meta.requestStatus === "fulfilled") {
-			if (!!result.payload) {
-				toast.success("ดำเนินการลบสำเร็จ");
-				setIsOpenModal(false);
-				setIsFinish(!isFinish);
-			} else {
-				toast.error("ดำเนินการลบไม่สำเร็จ");
-			}
-		} else {
-			toast.error("ดำเนินการลบไม่สำเร็จ");
-		}
+		deleteCustomer(String(customerId), {
+			onSuccess: (success) => {
+				if (success) {
+					notification.success({
+						message: messages["notification.api.resp.success"] as string,
+					});
+					setIsOpenModal(false);
+					setIsFinish(!isFinish);
+				} else {
+					notification.error({
+						message: messages["notification.api.resp.error"] as string,
+					});
+				}
+			},
+			onError: (error) => {
+				notification.error({
+					message: messages["notification.api.resp.error"] as string,
+				});
+			},
+		});
 	};
 
 	const handleOnClose = () => {
@@ -53,7 +58,7 @@ export default function ModalConfirm({
 			centered
 			footer={null}
 		>
-			{isLoadingDelete ? (
+			{false ? (
 				<div
 					style={{
 						display: "flex",
@@ -65,11 +70,15 @@ export default function ModalConfirm({
 					<Spin />
 				</div>
 			) : (
-				<div className="flex items-center justify-end mt-4">
+				<div className="flex items-center justify-end mt-4 gap-4">
 					<Button type="default" onClick={handleOnClose}>
 						{messages["text.cancel"] as string}
 					</Button>
-					<Button type="primary" onClick={handleOnConfirm}>
+					<Button
+						type="primary"
+						onClick={handleOnConfirm}
+						loading={isPendingDeleteCusotmer}
+					>
 						{messages["text.confirm"] as string}
 					</Button>
 				</div>

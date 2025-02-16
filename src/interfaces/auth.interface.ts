@@ -4,7 +4,7 @@ export type TSignUp = {
 	confirmPassword: string;
 };
 
-export type TSignIn = {
-	email: string;
+export type SignIn = {
+	emailOrCardId: string;
 	password: string;
 };

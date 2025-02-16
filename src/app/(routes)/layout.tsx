@@ -39,6 +39,7 @@ export default function RoutesLayout({
 				<LayoutSidebar selectKey={selectKey} setSelectKey={setSelectKey} />
 
 				{/* <Layout style={{ padding: "24px", marginLeft: 200 }}> */}
+				{/* <Layout className="p-6 ml-[90px] md:ml-[200px]"></Layout> */}
 				<Layout className="p-6 ml-20 md:ml-[200px]">
 					<Layout.Content>{children}</Layout.Content>
 				</Layout>

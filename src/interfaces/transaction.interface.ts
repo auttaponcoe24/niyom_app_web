@@ -1,17 +1,16 @@
-export interface TParams {
+export interface TransactionParams {
 	start: number;
-	page_size: number;
+	pageSize: number;
 	keywords: string;
+	customerId: string;
 	date: string;
-	zoneId: number;
 	type: "W" | "E";
+	zoneId: number;
 }
 
 export type TGetDataTransaction = {
 	id: number;
 	date: string;
-	month: string;
-	year: string;
 	type: "W" | "E";
 	unitOldId: number;
 	unitOld: {
@@ -27,11 +26,14 @@ export type TGetDataTransaction = {
 	};
 	unitUsed: number;
 	amount: number;
+	pay: number;
 	overDue: number;
-	totalPrice: number;
-	status: "PENDING" | "SUCCESS" | "REJECT";
+	total: number;
+	status: "WAINING" | "PAY";
 	customerId: string;
 	zoneId: number;
+	approved: string;
+	approvedAt: string;
 	no: number;
 	prefix: string;
 	fullname: string;
@@ -42,16 +44,18 @@ export type TGetDataTransaction = {
 export type TUpdateOrCreateTransaction = {
 	id: number;
 	date: string;
-	month: string;
-	year: string;
 	type: "W" | "E";
 	unitOldId: number;
 	unitNewId: number;
 	unitUsed: number;
 	amount: number;
 	overDue: number;
-	totalPrice: number;
-	status: "PENDING" | "SUCCESS" | "REJECT";
-	zoneId: number;
+	pay: number;
+	total: number;
+	status: "WAINING" | "PAY";
 	customerId: string;
+	zoneId: number;
 };
+
+export interface UpdateOrCreateTransactionList
+	extends Array<TUpdateOrCreateTransaction> {}

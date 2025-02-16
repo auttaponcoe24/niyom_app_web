@@ -1,12 +1,11 @@
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { useSelector } from "react-redux";
-import { TMode, TParams } from "@/src/interfaces/zone.interface";
-import { getZoneAll } from "@/src/store/slices/zoneSlice";
-import { Button, Card, Pagination, Table, TableColumnType } from "antd";
+import { TMode, TParams, ZoneData } from "@/src/interfaces/zone.interface";
+import { Button, Card, Pagination, Table } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useIntl } from "react-intl";
+import { useGetZone } from "@/src/hooks/useZone";
+import { ColumnsType } from "antd/es/table";
 
 type Props = {
 	params: TParams;
@@ -29,18 +28,20 @@ export default function TableZone({
 }: Props) {
 	const { messages } = useIntl();
 	const router = useRouter();
-	const dispatch = useAppDispatch();
-	const { data: dataZone, isLoading: isLoadingZone } = useSelector(
-		(state: RootState) => state.zoneSlice
-	);
 
 	// console.log("dataZone=>", dataZone);
+	const {
+		data: zoneData,
+		isLoading: isLoadingZone,
+		isFetching: isFetchingZone,
+		refetch: refetchZone,
+	} = useGetZone(params);
 
 	useEffect(() => {
-		dispatch(getZoneAll(params));
-	}, [params, isFinish, dispatch]);
+		refetchZone();
+	}, [params, isFinish]);
 
-	const columns: TableColumnType[] = [
+	const columns: ColumnsType<ZoneData> = [
 		{
 			title: "ลำดับ",
 			align: "center",
@@ -55,7 +56,7 @@ export default function TableZone({
 			align: "center",
 			width: 100,
 			render: (_, record) => {
-				return <div className="text-left">{record.zone_name}</div>;
+				return <div className="text-left">{record.zoneName}</div>;
 			},
 		},
 		{
@@ -94,15 +95,15 @@ export default function TableZone({
 				rowKey={(record) => record.no}
 				columns={columns}
 				dataSource={
-					dataZone?.result?.map((item: any, index: number) => ({
+					zoneData?.data?.map((item: any, index: number) => ({
 						...item,
-						no: (params.start - 1) * params.page_size + (index + 1),
+						no: (params.start - 1) * params.pageSize + (index + 1),
 					})) ?? []
 				}
 				scroll={{
 					x: 300,
 				}}
-				loading={isLoadingZone}
+				loading={isLoadingZone || isFetchingZone}
 				pagination={false}
 			/>
 
@@ -110,7 +111,7 @@ export default function TableZone({
 				<Pagination
 					showSizeChanger
 					current={params.start}
-					total={dataZone?.total_record}
+					total={zoneData?.total_record}
 					showTotal={(total) =>
 						`${messages["pagination.total"] as string} ${total} ${
 							messages["pagination.item"] as string
@@ -120,7 +121,7 @@ export default function TableZone({
 						setParams((prev) => ({
 							...prev,
 							start: page,
-							page_size: pageSize,
+							pageSize: pageSize,
 						}));
 					}}
 					responsive
