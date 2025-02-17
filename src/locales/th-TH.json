@@ -7,6 +7,7 @@
 	"sidebar.customer": "จัดการลูกค้า",
 	"sidebar.unit": "จัดการหน่วยมิเตอร์",
 	"sidebar.transaction": "จัดการธุรกรรม",
+	"sidebar.report": "รายงาน",
 	"notification.api.resp.success": "ดำเนินการสำเร็จ",
 	"notification.api.resp.error": "ดำเนินการไม่สำเร็จ",
 	"text.save": "บันทึก",
@@ -15,5 +16,6 @@
 	"text.reset": "ล้าง",
 	"text.confirm": "ยืนยัน",
 	"pagination.total": "ทั้งหมด",
-	"pagination.item": "รายการ"
+	"pagination.item": "รายการ",
+	"text.no": "ลำดับ"
 }

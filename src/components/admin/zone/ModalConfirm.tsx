@@ -1,10 +1,7 @@
 import { useDeleteZone } from "@/src/hooks/useZone";
-import { RootState, useAppDispatch } from "@/src/store/store";
-import { Button, Divider, Modal, notification, Spin } from "antd";
+import { Button, Modal, notification, Spin } from "antd";
 import React, { Dispatch, SetStateAction } from "react";
-import toast from "react-hot-toast";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
 
 type Props = {
 	zoneId: number | null;

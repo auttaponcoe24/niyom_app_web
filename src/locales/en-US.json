@@ -7,6 +7,7 @@
 	"sidebar.customer": "Customer",
 	"sidebar.unit": "Unit",
 	"sidebar.transaction": "Transaction",
+	"sidebar.report": "Report",
 	"notification.api.resp.success": "Success",
 	"notification.api.resp.error": "Error",
 	"text.save": "Save",

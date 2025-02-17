@@ -12,6 +12,7 @@ import {
 const { Sider } = Layout;
 import { FaBolt } from "react-icons/fa";
 import { AiOutlineUser } from "react-icons/ai";
+import { TbReportAnalytics } from "react-icons/tb";
 
 type Props = {
 	selectKey: string[];
@@ -57,25 +58,32 @@ export default function LayoutSidebar({ selectKey, setSelectKey }: Props) {
 				<Link href={`/customer`}>{messages["sidebar.customer"] as string}</Link>
 			),
 		},
-		// {
-		// 	key: 3,
-		// 	icon: (
-		// 		<div>
-		// 			<MdOutlineWaterDrop size={10} /> /
-		// 			<FaBolt size={10} />
-		// 		</div>
-		// 	),
-		// 	label: <Link href={`/unit`}>{messages["sidebar.unit"] as string}</Link>,
-		// },
-		// {
-		// 	key: 4,
-		// 	icon: <MdOutlineReceiptLong size={20} />,
-		// 	label: (
-		// 		<Link href={`/transaction`}>
-		// 			{messages["sidebar.transaction"] as string}
-		// 		</Link>
-		// 	),
-		// },
+		{
+			key: 3,
+			icon: (
+				<div>
+					<MdOutlineWaterDrop size={10} /> /
+					<FaBolt size={10} />
+				</div>
+			),
+			label: <Link href={`/unit`}>{messages["sidebar.unit"] as string}</Link>,
+		},
+		{
+			key: 4,
+			icon: <MdOutlineReceiptLong size={20} />,
+			label: (
+				<Link href={`/transaction`}>
+					{messages["sidebar.transaction"] as string}
+				</Link>
+			),
+		},
+		{
+			key: 5,
+			icon: <TbReportAnalytics size={20} />,
+			label: (
+				<Link href={`/report`}>{messages["sidebar.report"] as string}</Link>
+			),
+		},
 	];
 
 	const {
