@@ -30,28 +30,27 @@ export default function CustomerComponent({}: Props) {
 	return (
 		<div>
 			<Card>
-				<div className="grid grid-cols-12 gap-4">
-					<div className="col-span-11">
-						<CustomerFilter params={params} setParams={setParams} />
-					</div>
-
-					<div className="col-span-1">
-						<button
-							className="w-[36px] h-[36px] rounded-full border-none bg-primary cursor-pointer"
-							onClick={() => {
-								setIsOpenModalDetail(true);
-								setIsMode("create");
-							}}
-						>
-							<PlusOutlined style={{ fontSize: 24, color: "white" }} />
-						</button>
-					</div>
+				<div className="">
+					<CustomerFilter params={params} setParams={setParams} />
 				</div>
 			</Card>
 
 			<Divider />
 
 			<Card>
+				<div className="flex items-center justify-end">
+					<Button
+						className="mb-4"
+						type="default"
+						htmlType="button"
+						onClick={() => {
+							setIsOpenModalDetail(true);
+							setIsMode("create");
+						}}
+					>
+						+ ลูกค้า
+					</Button>
+				</div>
 				{/* table */}
 				<TableCustomer
 					params={params}

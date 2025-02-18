@@ -1,26 +1,26 @@
 import { useGetCustomers } from "@/src/hooks/useCustomer";
 import { useGetZone } from "@/src/hooks/useZone";
-import { UnitParams } from "@/src/interfaces/unit.interface";
+import { TransactionParams } from "@/src/interfaces/transaction.interface";
 import { Button, DatePicker, Form, Select } from "antd";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import dayjs from "@/utils/dayjs";
 import { useIntl } from "react-intl";
+import dayjs from "@/utils/dayjs";
 
 type Props = {
-	params: UnitParams;
-	setParams: Dispatch<SetStateAction<UnitParams>>;
+	params: TransactionParams;
+	setParams: Dispatch<SetStateAction<TransactionParams>>;
 };
 
-interface UnitForm {
+interface TransactionForm {
 	type?: "W" | "E";
 	date?: dayjs.Dayjs;
 	// zoneId?: number;
 	customerId?: string;
 }
 
-export default function UnitFilter({ params, setParams }: Props) {
+export default function TransactionFilter({ params, setParams }: Props) {
 	const { messages } = useIntl();
-	const [form] = Form.useForm<UnitForm>();
+	const [form] = Form.useForm<TransactionForm>();
 	const [zoneId, setZoneId] = useState<number | null>(null);
 
 	const {
@@ -40,7 +40,7 @@ export default function UnitFilter({ params, setParams }: Props) {
 
 		if (params) {
 			form.setFieldsValue({
-				date: params.date ? dayjs(params.date, "YYYY-MM-DD") : undefined,
+				date: params.date ? dayjs(params.date, "YYYY-MM") : undefined,
 				// zoneId: params.zoneId,
 				type: params.type,
 			});
@@ -73,7 +73,7 @@ export default function UnitFilter({ params, setParams }: Props) {
 		},
 	];
 
-	const handleOnFinishForm = (values: UnitForm) => {
+	const handleOnFinishForm = (values: TransactionForm) => {
 		setParams((prev) => ({
 			...prev,
 			type: values.type,
@@ -84,6 +84,7 @@ export default function UnitFilter({ params, setParams }: Props) {
 			customerId: values.customerId ? values.customerId : "",
 		}));
 	};
+
 	return (
 		<Form form={form} onFinish={handleOnFinishForm} layout="vertical">
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -123,7 +124,6 @@ export default function UnitFilter({ params, setParams }: Props) {
 							label: `${customer.firstName} ${customer.lastName}`,
 							value: customer.id,
 						}))}
-						showSearch
 						filterOption={(input, option) =>
 							option?.label.toLowerCase().includes(input.toLowerCase()) || false
 						}

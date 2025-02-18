@@ -1,45 +1,27 @@
 import {
-	TGetDataTransaction,
+	TransactionListFetchResponse,
 	TransactionParams,
-	TUpdateOrCreateTransaction,
 	UpdateOrCreateTransactionList,
 } from "@/src/interfaces/transaction.interface";
 import httpClient from "@/src/utils/httpClient";
 
-export const GET_TRANSACTION = async (
+export const getTransactions = async (
 	params: TransactionParams
-): Promise<
-	| {
-			status: boolean;
-			message: string;
-			data: TGetDataTransaction[];
-			total_record: number;
-	  }
-	| Error
-> => {
+): Promise<TransactionListFetchResponse | undefined> => {
 	try {
 		const res = await httpClient.get(
 			`/api/transaction/get-all?start=${params.start}&pageSize=${params.pageSize}&keywords=${params.keywords}&customerId=${params.customerId}&date=${params.date}&type=${params.type}&zoneId=${params.zoneId}`
 		);
 
 		return res.data;
-	} catch (error: unknown) {
-		console.error;
-		// return error
-		if (error instanceof Error) {
-			console.error("Error fetching transactions:", error.message);
-			return error;
-		}
-
-		// Fallback for unknown error types
-		const fallbackError = new Error("An unknown error occurred.");
-		console.error(fallbackError.message);
-		return fallbackError;
+	} catch (error) {
+		console.error(error);
+		return;
 	}
 };
 
 // /transaction/updateOrCreate
-export const UPDATE_OR_CREATE_TRANSACTION = async (
+export const updateOrCreateTransaction = async (
 	values: UpdateOrCreateTransactionList
 ) => {
 	try {

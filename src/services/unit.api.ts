@@ -33,8 +33,13 @@ export const getUnitList = async (
 
 		// console.log(first);
 
-		const res = await httpClient.get(`/api/unit/get-all?${queryParams}`);
-		return res.data;
+		// const res = await httpClient.get(`/api/unit/get-all?${queryParams}`);
+		if (params.zoneId) {
+			const res = await httpClient.get(
+				`/api/unit/get-all?start=${params.start}&pageSize=${params.pageSize}&keywords=${params.keywords}&customerId=${params.customerId}&date=${params.date}&zoneId=${params.zoneId}&type=${params.type}`
+			);
+			return res.data;
+		}
 	} catch (error) {
 		console.error("Error fetching unit list:", error);
 		throw new Error("Failed to fetch unit list");

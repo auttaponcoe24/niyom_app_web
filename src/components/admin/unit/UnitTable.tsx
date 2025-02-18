@@ -34,6 +34,7 @@ export default function UnitTable({
 	useEffect(() => {
 		refetchUnitList();
 	}, [params, isFinish]);
+
 	const columns: ColumnsType<UnitData> = [
 		{
 			title: "ลำดับ",
@@ -50,10 +51,18 @@ export default function UnitTable({
 			},
 		},
 		{
-			title: dayjs(params.date).format("MM/YYYY") as string,
+			title: dayjs.utc(params.date).format("MMMBB") as string,
 			align: "center",
 			render: (_, record) => {
-				return <div>{record.id === 0 ? "ยังไม่ได้จด" : record.unitNumber}</div>;
+				return (
+					<div>
+						{record.id === 0 ? (
+							<div className="text-red-600">ยังไม่จดหน่วย</div>
+						) : (
+							record.unitNumber
+						)}
+					</div>
+				);
 			},
 		},
 		{

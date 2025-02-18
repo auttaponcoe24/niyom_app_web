@@ -60,6 +60,7 @@ export default function ZoneComponent({}: Props) {
 						{messages["text.reset"] as string}
 					</Button>
 				</div>
+
 				<button
 					className="w-[36px] h-[36px] rounded-full border-none bg-primary cursor-pointer"
 					onClick={() => {
@@ -69,6 +70,16 @@ export default function ZoneComponent({}: Props) {
 				>
 					<PlusOutlined style={{ fontSize: 24, color: "white" }} />
 				</button>
+				{/* <Button
+					type="default"
+					htmlType="button"
+					onClick={() => {
+						setIsOpenModal(true);
+						setIsMode("create");
+					}}
+				>
+					+ เขต
+				</Button> */}
 			</div>
 
 			<Divider />
