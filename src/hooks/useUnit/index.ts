@@ -8,8 +8,13 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 // getUnitList
 export const useGetUnitList = (params: UnitParams) => {
 	return useQuery({
-		queryKey: ["get-units"],
-		queryFn: async () => await getUnitList(params),
+		queryKey: ["get-units", params.zoneId],
+		queryFn: async () => {
+			if (params.zoneId) {
+				return await getUnitList(params);
+			} else return { data: [], total_record: 0 };
+		},
+		enabled: !!params.zoneId,
 	});
 };
 

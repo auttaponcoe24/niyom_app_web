@@ -43,7 +43,7 @@ export default function AuthProvider({ children }: Props) {
 					height: "100vh",
 				}}
 			>
-				<Spin size="large" />
+				<Spin size="default" />
 			</div>
 		);
 	}

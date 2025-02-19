@@ -40,6 +40,24 @@ export const POST = async (
 
 // ########### controllers #############
 
+// const signin = async (body: SignIn) => {
+// 	try {
+// 		const res = await httpClient.post(`/api/auth/login`, body);
+// 		const { accessToken } = res.data;
+// 		cookies().set("accessToken", accessToken);
+// 		return NextResponse.json(res.data);
+// 	} catch (error: any) {
+// 		console.error(
+// 			"Sign-in error:",
+// 			error.response ? error.response.data : error.message
+// 		); // Log detailed error
+// 		return NextResponse.json({
+// 			message: "Sign-in failed",
+// 			error: error.response ? error.response.data : error.message,
+// 		});
+// 	}
+// };
+
 const signin = async (body: SignIn) => {
 	try {
 		const res = await httpClient.post(`/api/auth/login`, body);
@@ -50,11 +68,14 @@ const signin = async (body: SignIn) => {
 		console.error(
 			"Sign-in error:",
 			error.response ? error.response.data : error.message
-		); // Log detailed error
-		return NextResponse.json({
-			message: "Sign-in failed",
-			error: error.response ? error.response.data : error.message,
-		});
+		);
+		return NextResponse.json(
+			{
+				message: "Sign-in failed",
+				error: error.response ? error.response.data : error.message,
+			},
+			{ status: 400 }
+		);
 	}
 };
 
@@ -64,7 +85,7 @@ const signout = async (req: NextRequest) => {
 		cookiesStore.delete("accessToken");
 		return NextResponse.json({ message: "ok" });
 	} catch (error) {
-		return NextResponse.json({ message: "no" });
+		return NextResponse.json({ message: "no" }, { status: 400 });
 	}
 };
 
@@ -81,9 +102,9 @@ const getSession = async (req: NextRequest) => {
 
 			return NextResponse.json(res.data);
 		} else {
-			return NextResponse.json({ message: "no" });
+			return NextResponse.json({ message: "no" }, { status: 400 });
 		}
 	} catch (error) {
-		return NextResponse.json({ message: "no" });
+		return NextResponse.json({ message: "no" }, { status: 400 });
 	}
 };

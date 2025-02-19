@@ -10,8 +10,9 @@ import {
 } from "@/src/interfaces/transaction.interface";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Tabs, TabsProps } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import dayjs from "@/utils/dayjs";
+import TransactionModal from "@/src/components/admin/transaction/TransactionModal";
 
 type Props = {};
 
@@ -27,8 +28,12 @@ export default function TransactionComponent({}: Props) {
 		type: "W",
 		zoneId: undefined,
 	});
+	const [transactionsData, setTransactionsData] = useState<
+		TransactionData[] | null
+	>(null);
 	const [transactionData, setTransactionData] =
 		useState<TransactionData | null>(null);
+	const [isCreateCheck, setIsCreateCheck] = useState<boolean>(true);
 	const [isFinish, setIsFinish] = useState<boolean>(false);
 
 	const { data: zoneData } = useGetZone({
@@ -55,24 +60,14 @@ export default function TransactionComponent({}: Props) {
 		}
 	};
 
-	const tabList: TabsProps["items"] = zoneData?.data.map((zone, index) => ({
-		key: `${zone.id}`,
-		label: zone.zoneName,
-		children: (
-			<div>
-				<TransactionTable
-					params={params}
-					setParams={setParams}
-					setTransactionMode={setTransactionMode}
-					setTransactionData={setTransactionData}
-					isOpenModal={isOpenModal}
-					setIsOpenModal={setIsOpenModal}
-					isFinish={isFinish}
-					setIsFinish={setIsFinish}
-				/>
-			</div>
-		),
-	}));
+	const tabList: TabsProps["items"] = useMemo(
+		() =>
+			zoneData?.data.map((zone) => ({
+				key: `${zone.id}`,
+				label: zone.zoneName,
+			})),
+		[zoneData]
+	);
 
 	return (
 		<div>
@@ -86,8 +81,9 @@ export default function TransactionComponent({}: Props) {
 
 			<Card>
 				<div className="relative">
-					<div className="absolute top-0 right-0">
+					<div className="absolute top-0 right-0 z-50">
 						<Button
+							disabled={isCreateCheck}
 							className="mb-4"
 							type="default"
 							htmlType="button"
@@ -107,15 +103,36 @@ export default function TransactionComponent({}: Props) {
 					/>
 				</div>
 				{/* table */}
-				{/* <TransactionTable
+				<TransactionTable
+					zoneId={params.zoneId ?? 0}
 					params={params}
 					setParams={setParams}
+					transactionMode={transactionMode}
 					setTransactionMode={setTransactionMode}
 					setTransactionData={setTransactionData}
+					transactionsData={transactionsData}
+					setTransactionsData={setTransactionsData}
+					isOpenModal={isOpenModal}
 					setIsOpenModal={setIsOpenModal}
 					isFinish={isFinish}
-				/> */}
+					setIsFinish={setIsFinish}
+					setIsCreateCheck={setIsCreateCheck}
+				/>
 			</Card>
+
+			{/* TransactionModal */}
+			<TransactionModal
+				transactionMode={transactionMode}
+				setTransactionMode={setTransactionMode}
+				isOpenModal={isOpenModal}
+				setIsOpenModal={setIsOpenModal}
+				setIsFinish={setIsFinish}
+				transactionData={transactionData}
+				setTransactionData={setTransactionData}
+				transactionsData={transactionsData}
+				setTransactionsData={setTransactionsData}
+				params={params}
+			/>
 		</div>
 	);
 }

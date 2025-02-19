@@ -15,27 +15,38 @@ import dayjs from "@/utils/dayjs";
 import UnitModalDetail from "@/src/components/admin/unit/UnitModalDetail";
 import { UnitData, UnitMode } from "@/src/interfaces/unit.interface";
 import { AiOutlineEdit } from "react-icons/ai";
+import { GiReceiveMoney } from "react-icons/gi";
 
 type Props = {
+	zoneId: number;
 	params: TransactionParams;
 	setParams: Dispatch<SetStateAction<TransactionParams>>;
+	transactionMode: TransactionMode;
 	setTransactionMode: Dispatch<SetStateAction<TransactionMode>>;
 	setTransactionData: Dispatch<SetStateAction<TransactionData | null>>;
+	transactionsData: TransactionData[] | null;
+	setTransactionsData: Dispatch<SetStateAction<TransactionData[] | null>>;
 	isOpenModal: boolean;
 	setIsOpenModal: Dispatch<SetStateAction<boolean>>;
 	isFinish: boolean;
 	setIsFinish: Dispatch<SetStateAction<boolean>>;
+	setIsCreateCheck: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function TransactionTable({
+	zoneId,
 	params,
 	setParams,
+	transactionMode,
 	setTransactionMode,
 	setTransactionData,
+	transactionsData,
+	setTransactionsData,
 	isOpenModal,
 	setIsOpenModal,
 	isFinish,
 	setIsFinish,
+	setIsCreateCheck,
 }: Props) {
 	const { messages } = useIntl();
 	const [unitData, setUnitData] = useState<UnitData | null>(null);
@@ -45,11 +56,38 @@ export default function TransactionTable({
 		isLoading: isTransactionListLoading,
 		isFetching: isTransactionListFetching,
 		refetch: refetchTransactionList,
-	} = useGetTransactions(params);
+	} = useGetTransactions(params, zoneId);
+
+	const [isUnitOpenModal, setIsUnitOpenModal] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (
+			transactionListData &&
+			transactionListData.data.length > 0 &&
+			isOpenModal &&
+			transactionMode === "create"
+		) {
+			setTransactionsData(transactionListData.data);
+		}
+	}, [transactionListData, isOpenModal, transactionMode]);
+
+	useEffect(() => {
+		if (
+			transactionListData?.data?.some(
+				(item) => !item.unitNewId || !item.unitOldId
+			) ||
+			transactionListData?.data.length === 0
+		) {
+			setIsCreateCheck(true);
+		} else {
+			setIsCreateCheck(false);
+		}
+	}, [transactionListData]);
 
 	useEffect(() => {
 		refetchTransactionList();
 	}, [params, isFinish]);
+
 	const columns: ColumnsType<TransactionData> = [
 		{
 			title: "ลำดับ",
@@ -88,7 +126,7 @@ export default function TransactionTable({
 							className={
 								!record.unitOld.id
 									? "text-gray-300 !cursor-not-allowed"
-									: "cursor-pointer"
+									: "cursor-pointer hover:text-primary"
 							}
 							onClick={() => {
 								setUnitData({
@@ -104,7 +142,7 @@ export default function TransactionTable({
 									houseNumber: record.houseNumber,
 								});
 								if (!!record.unitOld.id) {
-									setIsOpenModal(true);
+									setIsUnitOpenModal(true);
 								}
 							}}
 						/>
@@ -131,6 +169,7 @@ export default function TransactionTable({
 						)}
 						<EditOutlined
 							style={{ fontSize: 16 }}
+							className="cursor-pointer hover:text-primary"
 							onClick={() => {
 								setUnitData({
 									id: record.unitOld.id,
@@ -144,9 +183,7 @@ export default function TransactionTable({
 									fullName: record.fullName,
 									houseNumber: record.houseNumber,
 								});
-								console.log(record);
-
-								setIsOpenModal(true);
+								setIsUnitOpenModal(true);
 							}}
 						/>
 					</div>
@@ -244,7 +281,7 @@ export default function TransactionTable({
 			render: (_, record) => {
 				return (
 					<div>
-						{record.status === "WAINING" ? (
+						{record.status === "WAITING" ? (
 							<div
 								className={`text-center py-1 px-2 rounded-full text-yellow-600 bg-yellow-100`}
 							>
@@ -257,6 +294,50 @@ export default function TransactionTable({
 								{`จ่ายแล้ว` as string}
 							</div>
 						)}
+					</div>
+				);
+			},
+		},
+		{
+			title: "จัดการ",
+			align: "center",
+			width: 80,
+			fixed: "right",
+			render: (_, record) => {
+				return (
+					<div className="flex items-center justify-center gap-4">
+						<EditOutlined
+							style={{ fontSize: 16 }}
+							className={
+								record.id === 0
+									? "cursor-not-allowed text-gray-300"
+									: "cursor-pointer hover:text-primary"
+							}
+							onClick={() => {
+								if (record.id !== 0) {
+									setIsOpenModal(true);
+									setTransactionMode("edit");
+									setTransactionData(record);
+								}
+							}}
+						/>
+						<div>
+							<GiReceiveMoney
+								size={20}
+								className={`${
+									record.id === 0
+										? "cursor-not-allowed text-gray-300"
+										: "cursor-pointer hover:text-primary"
+								} `}
+								onClick={() => {
+									if (record.id !== 0) {
+										setIsOpenModal(true);
+										setTransactionMode("pay");
+										setTransactionData(record);
+									}
+								}}
+							/>
+						</div>
 					</div>
 				);
 			},
@@ -307,8 +388,8 @@ export default function TransactionTable({
 
 			{/* ModalDetail */}
 			<UnitModalDetail
-				isModalDetail={isOpenModal}
-				setIsModalDetail={setIsOpenModal}
+				isModalDetail={isUnitOpenModal}
+				setIsModalDetail={setIsUnitOpenModal}
 				unitData={unitData}
 				setUnitData={setUnitData}
 				unitMode={unitMode}

@@ -2,6 +2,7 @@ import {
 	TransactionListFetchResponse,
 	TransactionParams,
 	UpdateOrCreateTransactionList,
+	UpdateTransactionId,
 } from "@/src/interfaces/transaction.interface";
 import httpClient from "@/src/utils/httpClient";
 
@@ -9,11 +10,13 @@ export const getTransactions = async (
 	params: TransactionParams
 ): Promise<TransactionListFetchResponse | undefined> => {
 	try {
-		const res = await httpClient.get(
-			`/api/transaction/get-all?start=${params.start}&pageSize=${params.pageSize}&keywords=${params.keywords}&customerId=${params.customerId}&date=${params.date}&type=${params.type}&zoneId=${params.zoneId}`
-		);
+		if (params.zoneId) {
+			const res = await httpClient.get(
+				`/api/transaction/get-all?start=${params.start}&pageSize=${params.pageSize}&keywords=${params.keywords}&customerId=${params.customerId}&date=${params.date}&type=${params.type}&zoneId=${params.zoneId}`
+			);
 
-		return res.data;
+			return res.data;
+		}
 	} catch (error) {
 		console.error(error);
 		return;
@@ -36,6 +39,16 @@ export const updateOrCreateTransaction = async (
 		const fallbackError = new Error();
 		return fallbackError;
 	}
+};
+
+export const updateTransactionId = async (values: UpdateTransactionId) => {
+	const { transactionId: _, ...update } = values;
+	const response = await httpClient.patch(
+		`/api/transaction/update/${values.transactionId}`,
+		update
+	);
+
+	return response.data;
 };
 
 export const payTransaction = async (values: { id: number; pay: number }) => {

@@ -7,7 +7,7 @@ import {
 	UnitParams,
 } from "@/src/interfaces/unit.interface";
 import { Card, Divider, Tabs, TabsProps } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import UnitTable from "@/src/components/admin/unit/UnitTable";
 import UnitModalDetail from "@/src/components/admin/unit/UnitModalDetail";
 import UnitFilter from "@/src/components/admin/unit/UnitFilter";
@@ -53,21 +53,29 @@ export default function UnitComponent({}: Props) {
 		}
 	};
 
-	const tabList: TabsProps["items"] = zoneData?.data.map((zone, index) => ({
-		key: `${zone.id}`,
-		label: zone.zoneName,
-		children: (
-			<div>
-				<UnitTable
-					params={params}
-					setParams={setParams}
-					isFinish={isFinish}
-					setUnitData={setUnitData}
-					setIsModalDetail={setIsModalDetail}
-				/>
-			</div>
-		),
-	}));
+	// const tabList: TabsProps["items"] = zoneData?.data.map((zone, index) => ({
+	// 	key: `${zone.id}`,
+	// 	label: zone.zoneName,
+	// 	children: (
+	// 		<div>
+	// 			<UnitTable
+	// 				params={params}
+	// 				setParams={setParams}
+	// 				isFinish={isFinish}
+	// 				setUnitData={setUnitData}
+	// 				setIsModalDetail={setIsModalDetail}
+	// 			/>
+	// 		</div>
+	// 	),
+	// }));
+
+	const tabList: TabsProps["items"] = useMemo(() => {
+		return zoneData?.data.map((zone, index) => ({
+			key: `${zone.id}`,
+			label: zone.zoneName,
+		}));
+	}, [zoneData]);
+
 	return (
 		<div>
 			<Card>
@@ -83,13 +91,13 @@ export default function UnitComponent({}: Props) {
 					items={tabList}
 					onChange={(activeKey: string) => handleOnChangeTabs(activeKey)}
 				/>
-				{/* <UnitTable
+				<UnitTable
 					params={params}
 					setParams={setParams}
 					isFinish={isFinish}
 					setUnitData={setUnitData}
 					setIsModalDetail={setIsModalDetail}
-				/> */}
+				/>
 			</Card>
 
 			{/* ModalDetail */}

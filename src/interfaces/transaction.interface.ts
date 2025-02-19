@@ -37,7 +37,7 @@ export interface TransactionData {
 	total: number;
 	pay: number;
 	remain: number;
-	status: "PAY" | "WAINING";
+	status: "PAY" | "WAITING";
 	customerId: string;
 	zoneId: number;
 	approved: {
@@ -72,12 +72,28 @@ export type UpdateOrCreateTransaction = {
 	total: number;
 	pay: number;
 	remain: number;
-	status: "WAINING" | "PAY";
+	status: "WAITING" | "PAY";
 	customerId: string;
 	zoneId: number;
 };
 
+export interface UpdateTransactionId {
+	transactionId: number;
+	unitNumberOld: number;
+	unitNumberNew: number;
+	unitUsed: number;
+	amount: number;
+	overDue: number;
+	total: number;
+}
+
 export interface UpdateOrCreateTransactionList
 	extends Array<UpdateOrCreateTransaction> {}
 
-export type TransactionMode = "view" | "create" | "edit" | "delete" | null;
+export type TransactionMode =
+	| "view"
+	| "create"
+	| "edit"
+	| "delete"
+	| "pay"
+	| null;
